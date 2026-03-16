@@ -1,0 +1,17 @@
+{
+  "name": "claude-statusline",
+  "owner": {
+    "name": "Victor"
+  },
+  "metadata": {
+    "description": "Zero-dependency statusline for Claude Code with rainbow progress bar, 10 themes, rate limit monitoring, and natural language configuration.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "claude-statusline",
+      "source": "./",
+      "description": "Conditional rainbow statusline with 10 themes, 8 segments, 4 bar styles, and natural language config."
+    }
+  ]
+}
