@@ -1,0 +1,12 @@
+{
+  "name": "claude-statusline",
+  "version": "0.1.0",
+  "description": "Zero-dependency statusline for Claude Code with rainbow progress bar, 10 themes, rate limit monitoring, and natural language configuration.",
+  "author": {
+    "name": "Victor",
+    "url": "https://github.com/bouob"
+  },
+  "repository": "https://github.com/bouob/claude-statusline",
+  "license": "MIT",
+  "keywords": ["statusline", "status-bar", "rainbow", "themes", "rate-limit"]
+}
