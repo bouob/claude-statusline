@@ -4,17 +4,20 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 
 [繁體中文](./README.zh-TW.md)
 
+![showcase](./images/showcase.png)
+
 ## Features
 
+- ⚡ **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (via OAuth endpoint, 60s cache)
 - 🌈 **Conditional Rainbow** — Progress bar automatically shifts to rainbow gradient at high context usage
 - 🎨 **10 Themes** — default, rainbow, nord, catppuccin, dracula, gruvbox, tokyo-night, solarized, one-dark, monokai
 - 📊 **8 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion
-- ⚡ **Rate Limit Monitoring** — 5-hour and 7-day quota usage with reset countdown
 - 🎯 **4 Bar Styles** — block `████░░░░`, dot `●●●●○○○○`, line `━━━━┅┅┅┅`, braille `⣿⣿⣿⣿⠀⠀⠀⠀`
 - 🔗 **5 Separators** — powerline, rounded, slash, minimal, none
 - 🎨 **13 Custom Colors** — Override any color with hex values
 - 📐 **Responsive Layout** — Auto-hide low-priority segments when terminal is narrow
 - 🔧 **Natural Language Config** — Configure via `/claude-statusline:config dracula + dot + powerline`
+- 📢 **Promotion Segment** — Temporary: shows 1x/⚡2x context multiplier and peak/off-peak countdown during active promotions
 
 ## Prerequisites
 
@@ -26,13 +29,16 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 ### Claude Code Plugin (Recommended)
 
 ```bash
-# 1. Install plugin
-claude plugin add bouob/claude-statusline
+# 1. Inside Claude Code, install plugin
+/plugin                        # → enter: bouob/claude-statusline
 
-# 2. Run setup (writes to ~/.claude/settings.json automatically)
+# 2. Reload plugins
+/reload-plugins
+
+# 3. Run setup (writes to ~/.claude/settings.json automatically)
 /claude-statusline:setup
 
-# 3. Restart Claude Code
+# 4. Restart Claude Code
 ```
 
 ### Manual Installation
