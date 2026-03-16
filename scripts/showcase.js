@@ -98,22 +98,22 @@ for (const theme of ['default', 'dracula', 'nord', 'catppuccin', 'gruvbox', 'tok
 }
 
 section('VISUAL MODES');
-render('Normal (32%)', { theme: 'dracula', separator: 'none' }, {
+render('Normal (32%)', { theme: 'dracula', separator: 'rounded' }, {
   context_window: { total_input_tokens: 320000, total_output_tokens: 48000, context_window_size: 1000000, used_percentage: 32, remaining_percentage: 68 },
 });
-render('Warning (75%)', { theme: 'dracula', separator: 'none' }, {
+render('Warning (75%)', { theme: 'dracula', separator: 'rounded' }, {
   context_window: { total_input_tokens: 750000, total_output_tokens: 80000, context_window_size: 1000000, used_percentage: 75, remaining_percentage: 25 },
 });
-render('Critical (88%)', { theme: 'dracula', separator: 'none' }, {
+render('Critical (88%)', { theme: 'dracula', separator: 'rounded' }, {
   context_window: { total_input_tokens: 880000, total_output_tokens: 90000, context_window_size: 1000000, used_percentage: 88, remaining_percentage: 12 },
 });
-render('Rainbow (95%)', { theme: 'dracula', separator: 'none' }, {
+render('Rainbow (95%)', { theme: 'dracula', separator: 'rounded' }, {
   context_window: { total_input_tokens: 950000, total_output_tokens: 95000, context_window_size: 1000000, used_percentage: 95, remaining_percentage: 5 },
 });
 
 section('BAR STYLES');
 for (const barStyle of ['block', 'dot', 'line', 'braille']) {
-  render(barStyle, { theme: 'catppuccin', separator: 'none', barStyle });
+  render(barStyle, { theme: 'catppuccin', separator: 'powerline', barStyle });
 }
 
 section('SEPARATORS');
@@ -130,8 +130,8 @@ writeFileSync(rlCache, JSON.stringify({
   fiveHourReset: new Date(Date.now() + 142 * 60_000).toISOString(),
   sevenDayReset: new Date(Date.now() + (4 * 24 + 9) * 3600_000).toISOString(),
 }));
-render('1-line', { theme: 'dracula', separator: 'none', layout: oneLineLayout });
-render('2-line (default)', { theme: 'dracula', separator: 'none', layout: twoLineLayout });
+render('1-line', { theme: 'dracula', separator: 'powerline', layout: oneLineLayout });
+render('2-line (default)', { theme: 'dracula', separator: 'powerline', layout: twoLineLayout });
 // Clean up rate-limit cache
 if (existsSync(rlCache)) unlinkSync(rlCache);
 
