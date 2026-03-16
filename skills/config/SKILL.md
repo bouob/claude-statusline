@@ -80,7 +80,13 @@ Determine mode based on `$ARGUMENTS`:
 Guide the user through setup step-by-step using AskUserQuestion:
 
 ### Step 1: Choose Theme
-List all 10 themes. User selects one (or Enter to skip and use default).
+First, render all 10 themes in the terminal so the user can see actual colors:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/showcase.js" 2>/dev/null | head -13
+```
+
+Then list all 10 themes with AskUserQuestion (no preview needed — the user already saw colors above). User selects one (or Enter to skip and use default).
 
 ### Step 2: Choose Bar Style
 Show block / dot / line / braille options.

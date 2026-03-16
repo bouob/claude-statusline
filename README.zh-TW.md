@@ -4,17 +4,20 @@
 
 [English](./README.md)
 
+![showcase](./images/showcase.png)
+
 ## 功能特色
 
+- ⚡ **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（OAuth endpoint，60 秒快取）
 - 🌈 **條件式彩虹** — 進度條在高 context 使用率時自動切換為彩虹漸層
 - 🎨 **10 種主題** — default、rainbow、nord、catppuccin、dracula、gruvbox、tokyo-night、solarized、one-dark、monokai
 - 📊 **8 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion
-- ⚡ **速率限制監控** — 5 小時 / 7 天配額用量與重置倒數
 - 🎯 **4 種進度條樣式** — 方塊 `████░░░░`、圓點 `●●●●○○○○`、細線 `━━━━┅┅┅┅`、點陣 `⣿⣿⣿⣿⠀⠀⠀⠀`
 - 🔗 **5 種分隔符** — powerline、rounded、slash、minimal、none
 - 🎨 **13 個自訂顏色** — 以 hex 值覆寫任意色彩
 - 📐 **自適應排版** — 終端寬度不足時自動隱藏低優先級段落
 - 🔧 **自然語言設定** — 透過 `/claude-statusline:config dracula + dot + powerline` 直接設定
+- 📢 **促銷段落** — 限時功能：在促銷活動期間顯示 1x/⚡2x context 倍率與尖峰/離峰倒數
 
 ## 前置需求
 
@@ -26,13 +29,16 @@
 ### Claude Code Plugin（推薦）
 
 ```bash
-# 1. 安裝 plugin
-claude plugin add bouob/claude-statusline
+# 1. 在 Claude Code 內安裝 plugin
+/plugin                        # → 輸入: bouob/claude-statusline
 
-# 2. 執行 setup（自動寫入 ~/.claude/settings.json）
+# 2. 重新載入插件
+/reload-plugins
+
+# 3. 執行 setup（自動寫入 ~/.claude/settings.json）
 /claude-statusline:setup
 
-# 3. 重啟 Claude Code
+# 4. 重啟 Claude Code
 ```
 
 ### 手動安裝

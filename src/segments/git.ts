@@ -51,7 +51,7 @@ export const gitSegment: Segment = {
     const info = getGitInfo();
     if (!info) return null;
 
-    const icon = '\uE0A0';
+    const icon = '★';
     const dirtyMark = info.dirty ? '*' : '';
     const raw = `${icon} ${info.branch}${dirtyMark}`;
     const color = info.dirty
