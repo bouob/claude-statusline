@@ -61,7 +61,6 @@ node scripts/setup.js
 | Context 70–85% | `warning` | 黃色系 |
 | Context 85–90% | `critical` | 紅色系 |
 | Context > 90% | `rainbow` | 逐字元彩虹漸層 |
-| 超過 200k tokens | `rainbow` | 逐字元彩虹漸層 |
 
 ## 主題
 
