@@ -9,7 +9,6 @@ export function determineVisualMode(data: StatusData, config: StatuslineConfig):
 
   if (rainbow.alwaysOn) return 'rainbow';
   if (pct > rainbow.contextThreshold) return 'rainbow';
-  if (data.exceeds200k) return 'rainbow';
 
   if (pct > 85) return 'critical';
   if (pct > 70) return 'warning';

@@ -61,7 +61,6 @@ The progress bar automatically changes based on context usage:
 | Context 70–85% | `warning` | Yellow tones |
 | Context 85–90% | `critical` | Red tones |
 | Context > 90% | `rainbow` | Per-character rainbow gradient |
-| Over 200k tokens | `rainbow` | Per-character rainbow gradient |
 
 ## Themes
 
