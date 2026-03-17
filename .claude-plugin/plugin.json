@@ -14,5 +14,13 @@
     "rainbow",
     "themes",
     "rate-limit"
-  ]
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-update-path.js"
+      }
+    ]
+  }
 }
