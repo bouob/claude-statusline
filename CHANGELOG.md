@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/bouob/claude-statusline/compare/v0.5.0...v0.5.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* **ci:** use PAT for release-please to trigger downstream workflows ([#11](https://github.com/bouob/claude-statusline/issues/11)) ([a3d2154](https://github.com/bouob/claude-statusline/commit/a3d21542cfeb10971a96435afe0ca7a080fb99e0))
+
 ## [0.5.0](https://github.com/bouob/claude-statusline/compare/v0.4.0...v0.5.0) (2026-03-18)
 
 
