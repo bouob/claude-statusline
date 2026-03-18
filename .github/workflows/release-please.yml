@@ -14,6 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Auto-merge release PR
+        if: steps.release.outputs.prs_created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.MARKETPLACE_TOKEN }}
+          PRS: ${{ steps.release.outputs.prs }}
+        run: |
+          PR_NUMBER=$(echo "$PRS" | jq -r '.[0].number')
+          gh pr merge "$PR_NUMBER" --squash --repo "${{ github.repository }}"
