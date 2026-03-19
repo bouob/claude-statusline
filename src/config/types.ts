@@ -56,6 +56,7 @@ export interface StatuslineConfig {
       rainbow: boolean;
     };
     promotion: { enabled: boolean };
+    status: { enabled: boolean; cacheTtlSeconds: number };
   };
   rainbow: {
     contextThreshold: number;
