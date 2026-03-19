@@ -7,6 +7,7 @@ import { projectSegment } from './project.js';
 import { worktreeSegment } from './worktree.js';
 import { rateLimitSegment } from './rate-limit.js';
 import { promotionSegment } from './promotion.js';
+import { statusSegment } from './status.js';
 
 const ALL_SEGMENTS: Segment[] = [
   modelSegment,
@@ -17,6 +18,7 @@ const ALL_SEGMENTS: Segment[] = [
   worktreeSegment,
   rateLimitSegment,
   promotionSegment,
+  statusSegment,
 ];
 
 const SEGMENT_MAP = new Map<string, Segment>(

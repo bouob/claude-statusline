@@ -41,7 +41,6 @@ function determineVisualMode(data, config2) {
   const rainbow = config2.rainbow;
   if (rainbow.alwaysOn) return "rainbow";
   if (pct > rainbow.contextThreshold) return "rainbow";
-  if (data.exceeds200k) return "rainbow";
   if (pct > 85) return "critical";
   if (pct > 70) return "warning";
   return "normal";
@@ -604,6 +603,68 @@ var promotionSegment = {
   }
 };
 
+// src/segments/status.ts
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, statSync as statSync2 } from "fs";
+import { join as join2 } from "path";
+import { tmpdir as tmpdir2 } from "os";
+import { execFileSync as execFileSync3 } from "child_process";
+var CACHE_FILE2 = join2(tmpdir2(), "claude-statusline-status.json");
+var API_URL = "https://status.claude.com/api/v2/summary.json";
+var TARGETS = ["Claude Code", "Claude API (api.anthropic.com)"];
+var STATUS_LABELS = {
+  degraded_performance: "degraded",
+  partial_outage: "partial",
+  major_outage: "outage",
+  under_maintenance: "maint"
+};
+function readCache2(ttl) {
+  try {
+    const stat = statSync2(CACHE_FILE2);
+    if (Date.now() - stat.mtimeMs > ttl) return null;
+    return JSON.parse(readFileSync2(CACHE_FILE2, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+function fetchStatus() {
+  try {
+    const raw = execFileSync3("curl", [
+      "-s",
+      "--max-time",
+      "3",
+      API_URL
+    ], { encoding: "utf-8", timeout: 4e3, stdio: ["pipe", "pipe", "pipe"] });
+    const data = JSON.parse(raw);
+    writeFileSync2(CACHE_FILE2, raw, "utf-8");
+    return data;
+  } catch {
+    return null;
+  }
+}
+var statusSegment = {
+  name: "status",
+  render(ctx) {
+    const statusConfig = ctx.config.segments["status"];
+    const ttl = (statusConfig?.cacheTtlSeconds ?? 300) * 1e3;
+    const data = readCache2(ttl) ?? fetchStatus();
+    if (!data?.components) return null;
+    const issues = data.components.filter((c) => TARGETS.includes(c.name) && c.status !== "operational").map((c) => {
+      const label = STATUS_LABELS[c.status] ?? c.status;
+      const short = c.name.replace(/^Claude /, "").replace(/ \(.*\)$/, "");
+      return { short, label, status: c.status };
+    });
+    if (issues.length === 0) return null;
+    const parts = issues.map((i) => {
+      const color = i.status === "major_outage" ? ctx.theme.critical : ctx.theme.warning;
+      return colorize(`${i.short}:${i.label}`, color, ctx.colorDepth);
+    });
+    const icon = "\u26A0";
+    const text = `${icon} ${parts.join(" ")}`;
+    const width = icon.length + 1 + issues.map((i) => i.short.length + 1 + i.label.length).reduce((a, b) => a + b, 0) + (issues.length - 1);
+    return { text, width };
+  }
+};
+
 // src/segments/registry.ts
 var ALL_SEGMENTS = [
   modelSegment,
@@ -613,7 +674,8 @@ var ALL_SEGMENTS = [
   projectSegment,
   worktreeSegment,
   rateLimitSegment,
-  promotionSegment
+  promotionSegment,
+  statusSegment
 ];
 var SEGMENT_MAP = new Map(
   ALL_SEGMENTS.map((s) => [s.name, s])
@@ -661,6 +723,7 @@ function renderSegments(segmentNames, ctx, config2) {
   return results;
 }
 var SEGMENT_PRIORITY = {
+  "status": 0,
   "model": 1,
   "context-bar": 2,
   "rate-limit": 3,
@@ -715,8 +778,8 @@ ${line2}`;
 }
 
 // src/config/loader.ts
-import { readFileSync as readFileSync2 } from "fs";
-import { resolve as resolve2, join as join2 } from "path";
+import { readFileSync as readFileSync3 } from "fs";
+import { resolve as resolve2, join as join3 } from "path";
 import { homedir as homedir2 } from "os";
 
 // src/config/defaults.ts
@@ -730,7 +793,7 @@ var DEFAULT_CONFIG = {
   layout: {
     lines: 2,
     line1: ["model", "project", "git", "worktree", "promotion"],
-    line2: ["context-bar", "session", "rate-limit"]
+    line2: ["context-bar", "session", "rate-limit", "status"]
   },
   segments: {
     "context-bar": { enabled: true, width: 20, showPercentage: true },
@@ -750,7 +813,8 @@ var DEFAULT_CONFIG = {
       showBar: true,
       rainbow: false
     },
-    promotion: { enabled: true }
+    promotion: { enabled: true },
+    status: { enabled: true, cacheTtlSeconds: 300 }
   },
   rainbow: {
     contextThreshold: 90,
@@ -764,7 +828,7 @@ var DEFAULT_CONFIG = {
 var CONFIG_FILENAME = "claude-statusline.json";
 function tryReadJson(path) {
   try {
-    const raw = readFileSync2(path, "utf-8");
+    const raw = readFileSync3(path, "utf-8");
     return JSON.parse(raw);
   } catch {
     return null;
@@ -786,7 +850,7 @@ function deepMerge(a, b) {
 }
 function loadConfig() {
   const projectConfig = tryReadJson(resolve2(`.${CONFIG_FILENAME}`));
-  const userConfig = tryReadJson(join2(homedir2(), ".claude", CONFIG_FILENAME));
+  const userConfig = tryReadJson(join3(homedir2(), ".claude", CONFIG_FILENAME));
   let merged = DEFAULT_CONFIG;
   if (userConfig) {
     merged = deepMerge(merged, userConfig);

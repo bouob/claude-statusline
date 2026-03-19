@@ -46,15 +46,20 @@ function main() {
   const match = current.match(/^node\s+(.+)$/);
   if (!match) return;
 
-  if (existsSync(match[1])) return; // path is valid, nothing to do
+  const currentPath = match[1].replace(/\\/g, '/');
 
-  // Path is stale — find latest version in cache
+  // Find latest version in cache
   // Cache structure: .claude/plugins/cache/claude-statusline/claude-statusline/<version>/
   const cacheBase = resolve(pluginRoot, '..');
   const latestDist = findLatestVersion(cacheBase);
   if (!latestDist) return;
 
-  const newCommand = `node ${latestDist.replace(/\\/g, '/')}`;
+  const latestPath = latestDist.replace(/\\/g, '/');
+
+  // Already pointing to latest — nothing to do
+  if (currentPath === latestPath) return;
+
+  const newCommand = `node ${latestPath}`;
   settings.statusLine = {
     type: 'command',
     command: newCommand,

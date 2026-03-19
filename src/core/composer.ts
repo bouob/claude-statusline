@@ -39,6 +39,7 @@ function renderSegments(segmentNames: string[], ctx: SegmentContext, config: Sta
 
 // Priority: lower index = higher priority (keep first, drop last)
 const SEGMENT_PRIORITY: Record<string, number> = {
+  'status': 0,
   'model': 1,
   'context-bar': 2,
   'rate-limit': 3,

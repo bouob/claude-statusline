@@ -10,7 +10,7 @@ export const DEFAULT_CONFIG: StatuslineConfig = {
   layout: {
     lines: 2,
     line1: ['model', 'project', 'git', 'worktree', 'promotion'],
-    line2: ['context-bar', 'session', 'rate-limit'],
+    line2: ['context-bar', 'session', 'rate-limit', 'status'],
   },
   segments: {
     'context-bar': { enabled: true, width: 20, showPercentage: true },
@@ -31,6 +31,7 @@ export const DEFAULT_CONFIG: StatuslineConfig = {
       rainbow: false,
     },
     promotion: { enabled: true },
+    status: { enabled: true, cacheTtlSeconds: 300 },
   },
   rainbow: {
     contextThreshold: 90,
