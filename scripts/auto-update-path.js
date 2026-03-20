@@ -20,6 +20,9 @@ function findLatestVersion(cacheBase) {
   } catch {
     return null;
   }
+  // Only consider semver directories (e.g. "0.6.0"), ignore commit hashes
+  const semverRe = /^\d+\.\d+\.\d+$/;
+  entries = entries.filter(e => semverRe.test(e));
   // Sort semver descending, then return the first version that has dist/index.js
   entries.sort((a, b) => b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' }));
   for (const v of entries) {
