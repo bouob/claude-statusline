@@ -31,6 +31,18 @@ export function parseInput(raw: string): StatusData | null {
         projectName: basename(projectDir) || '',
       },
       exceeds200k: Boolean(d.exceeds_200k_tokens),
+      rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day
+        ? {
+            fiveHour: {
+              usedPercentage: Number(d.rate_limits?.five_hour?.used_percentage ?? 0),
+              resetsAt: d.rate_limits?.five_hour?.resets_at ?? null,
+            },
+            sevenDay: {
+              usedPercentage: Number(d.rate_limits?.seven_day?.used_percentage ?? 0),
+              resetsAt: d.rate_limits?.seven_day?.resets_at ?? null,
+            },
+          }
+        : undefined,
     };
   } catch {
     return null;

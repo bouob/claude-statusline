@@ -8,7 +8,7 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 
 ## Features
 
-- **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (via OAuth endpoint, 60s cache)
+- **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (native stdin on Claude Code 2.1.80+, OAuth fallback for older versions)
 - **Conditional Rainbow** — Progress bar automatically shifts to rainbow gradient at high context usage
 - **10 Themes** — default, rainbow, nord, catppuccin, dracula, gruvbox, tokyo-night, solarized, one-dark, monokai
 - **9 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion, status
@@ -210,7 +210,7 @@ Priority: `colors` field > theme definition > defaults.
 | `git` | Branch name + dirty status (5s cache) |
 | `project` | Project folder name |
 | `worktree` | Worktree label (when current_dir ≠ project_dir) |
-| `rate-limit` | 5h/7d quota usage + mini progress bar + reset countdown (60s cache) |
+| `rate-limit` | 5h/7d quota usage + mini progress bar + reset countdown (native stdin, OAuth fallback) |
 | `promotion` | Time-limited promotion label (auto-hidden when inactive) |
 | `status` | Claude service status indicator (cached) |
 

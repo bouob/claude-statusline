@@ -28,7 +28,17 @@ function parseInput(raw) {
         projectDir,
         projectName: basename(projectDir) || ""
       },
-      exceeds200k: Boolean(d.exceeds_200k_tokens)
+      exceeds200k: Boolean(d.exceeds_200k_tokens),
+      rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day ? {
+        fiveHour: {
+          usedPercentage: Number(d.rate_limits?.five_hour?.used_percentage ?? 0),
+          resetsAt: d.rate_limits?.five_hour?.resets_at ?? null
+        },
+        sevenDay: {
+          usedPercentage: Number(d.rate_limits?.seven_day?.used_percentage ?? 0),
+          resetsAt: d.rate_limits?.seven_day?.resets_at ?? null
+        }
+      } : void 0
     };
   } catch {
     return null;
@@ -510,11 +520,21 @@ function renderWindow(label, pct, resetAt, barWidth, showBar, showReset, useRain
   }
   return { text, width };
 }
+function fromStdin(ctx) {
+  const rl = ctx.data.rateLimits;
+  if (!rl) return null;
+  return {
+    fiveHour: rl.fiveHour.usedPercentage,
+    sevenDay: rl.sevenDay.usedPercentage,
+    fiveHourReset: rl.fiveHour.resetsAt,
+    sevenDayReset: rl.sevenDay.resetsAt
+  };
+}
 var rateLimitSegment = {
   name: "rate-limit",
   render(ctx) {
     const rlConfig = ctx.config.segments["rate-limit"];
-    const data = getRateLimitData();
+    const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
     const barWidth = rlConfig?.barWidth ?? 8;
     const showBar = rlConfig?.showBar ?? true;

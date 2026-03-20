@@ -24,7 +24,7 @@ for (const s of scenarios) {
       project_dir: 'D:\\Desktop\\side-project',
       added_dirs: [],
     },
-    version: '2.1.76',
+    version: '2.1.80',
     cost: {
       total_cost_usd: 3.45,
       total_duration_ms: 542000,
@@ -40,6 +40,16 @@ for (const s of scenarios) {
       remaining_percentage: s.remaining,
     },
     exceeds_200k_tokens: s.exceeds,
+    rate_limits: {
+      five_hour: {
+        used_percentage: 42.3,
+        resets_at: new Date(Date.now() + 142 * 60_000).toISOString(),
+      },
+      seven_day: {
+        used_percentage: 67.8,
+        resets_at: new Date(Date.now() + (4 * 24 + 9) * 3600_000).toISOString(),
+      },
+    },
   };
 
   console.error(`\n--- ${s.label} ---`);

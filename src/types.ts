@@ -21,6 +21,10 @@ export interface StatusData {
     projectName: string;
   };
   exceeds200k: boolean;
+  rateLimits?: {
+    fiveHour: { usedPercentage: number; resetsAt: string | null };
+    sevenDay: { usedPercentage: number; resetsAt: string | null };
+  };
 }
 
 export type VisualMode = 'normal' | 'warning' | 'critical' | 'rainbow';

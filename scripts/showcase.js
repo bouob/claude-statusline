@@ -37,7 +37,7 @@ function makeStdin(overrides = {}) {
       project_dir: '/home/user/my-project',
       added_dirs: [],
     },
-    version: '2.1.76',
+    version: '2.1.80',
     cost: {
       total_cost_usd: 8.42,
       total_duration_ms: 9360000,
@@ -53,6 +53,16 @@ function makeStdin(overrides = {}) {
       remaining_percentage: 68,
     },
     exceeds_200k_tokens: false,
+    rate_limits: {
+      five_hour: {
+        used_percentage: 23,
+        resets_at: new Date(Date.now() + 142 * 60_000).toISOString(),
+      },
+      seven_day: {
+        used_percentage: 41,
+        resets_at: new Date(Date.now() + (4 * 24 + 9) * 3600_000).toISOString(),
+      },
+    },
   };
   return JSON.stringify({ ...base, ...overrides });
 }
@@ -128,18 +138,8 @@ for (const separator of ['none', 'minimal', 'slash', 'rounded', 'powerline']) {
 }
 
 section('LAYOUT');
-// Mock rate-limit cache for 2-line demo
-const rlCache = join(tmpdir(), 'claude-statusline-ratelimit.json');
-writeFileSync(rlCache, JSON.stringify({
-  fiveHour: 23,
-  sevenDay: 41,
-  fiveHourReset: new Date(Date.now() + 142 * 60_000).toISOString(),
-  sevenDayReset: new Date(Date.now() + (4 * 24 + 9) * 3600_000).toISOString(),
-}));
 render('1-line', { theme: 'dracula', separator: 'powerline', layout: oneLineLayout });
 render('2-line (default)', { theme: 'dracula', separator: 'powerline', layout: twoLineLayout });
-// Clean up rate-limit cache
-if (existsSync(rlCache)) unlinkSync(rlCache);
 
 section('SERVICE STATUS');
 // Mock status cache to simulate API issues
