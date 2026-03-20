@@ -16,7 +16,7 @@
 - 🔗 **5 種分隔符** — powerline、rounded、slash、minimal、none
 - 🎨 **13 個自訂顏色** — 以 hex 值覆寫任意色彩
 - 📐 **自適應排版** — 終端寬度不足時自動隱藏低優先級段落
-- 🔧 **自然語言設定** — 透過 `/claude-statusline:config dracula + dot + powerline` 直接設定
+- 🔧 **自然語言設定** — 透過 `/claude-statusline:customize dracula + dot + powerline` 直接設定
 - 📢 **促銷段落** — 限時功能：在促銷活動期間顯示 1x/⚡2x context 倍率與尖峰/離峰倒數
 
 ## 前置需求
@@ -84,15 +84,15 @@ node scripts/setup.js
 使用自然語言設定，不需手動編輯 JSON：
 
 ```
-/claude-statusline:config dracula + dot + powerline
-/claude-statusline:config show current
-/claude-statusline:config reset
+/claude-statusline:customize dracula + dot + powerline
+/claude-statusline:customize show current
+/claude-statusline:customize reset
 ```
 
 不帶參數執行可進入互動式設定精靈：
 
 ```
-/claude-statusline:config
+/claude-statusline:customize
 ```
 
 ### 設定檔

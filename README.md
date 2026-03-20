@@ -16,7 +16,7 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 - 🔗 **5 Separators** — powerline, rounded, slash, minimal, none
 - 🎨 **13 Custom Colors** — Override any color with hex values
 - 📐 **Responsive Layout** — Auto-hide low-priority segments when terminal is narrow
-- 🔧 **Natural Language Config** — Configure via `/claude-statusline:config dracula + dot + powerline`
+- 🔧 **Natural Language Config** — Configure via `/claude-statusline:customize dracula + dot + powerline`
 - 📢 **Promotion Segment** — Temporary: shows 1x/⚡2x context multiplier and peak/off-peak countdown during active promotions
 
 ## Prerequisites
@@ -84,15 +84,15 @@ The progress bar automatically changes based on context usage:
 Use natural language to configure — no manual JSON editing needed:
 
 ```
-/claude-statusline:config dracula + dot + powerline
-/claude-statusline:config show current
-/claude-statusline:config reset
+/claude-statusline:customize dracula + dot + powerline
+/claude-statusline:customize show current
+/claude-statusline:customize reset
 ```
 
 Run without arguments for an interactive wizard:
 
 ```
-/claude-statusline:config
+/claude-statusline:customize
 ```
 
 ### Config File
