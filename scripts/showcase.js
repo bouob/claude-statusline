@@ -112,8 +112,14 @@ render('Rainbow (95%)', { theme: 'dracula', separator: 'rounded' }, {
 });
 
 section('BAR STYLES');
-for (const barStyle of ['block', 'dot', 'line', 'braille']) {
-  render(barStyle, { theme: 'catppuccin', separator: 'powerline', barStyle });
+const barModels = [
+  { barStyle: 'block',   model: { id: 'claude-opus-4-6[1m]', display_name: 'Opus 4.6' } },
+  { barStyle: 'dot',     model: { id: 'claude-sonnet-4-6[1m]', display_name: 'Sonnet 4.6' } },
+  { barStyle: 'line',    model: { id: 'claude-haiku-4-5', display_name: 'Haiku 4.5' } },
+  { barStyle: 'braille', model: { id: 'claude-opus-4-6[1m]', display_name: 'Opus 4.6' } },
+];
+for (const { barStyle, model } of barModels) {
+  render(barStyle, { theme: 'catppuccin', separator: 'powerline', barStyle }, { model });
 }
 
 section('SEPARATORS');
@@ -134,6 +140,53 @@ render('1-line', { theme: 'dracula', separator: 'powerline', layout: oneLineLayo
 render('2-line (default)', { theme: 'dracula', separator: 'powerline', layout: twoLineLayout });
 // Clean up rate-limit cache
 if (existsSync(rlCache)) unlinkSync(rlCache);
+
+section('SERVICE STATUS');
+// Mock status cache to simulate API issues
+const statusCache = join(tmpdir(), 'claude-statusline-status.json');
+const statusLayout = {
+  lines: 1,
+  line1: ['model', 'context-bar', 'project', 'git', 'status'],
+};
+
+// Degraded performance
+writeFileSync(statusCache, JSON.stringify({
+  components: [
+    { name: 'Claude Code', status: 'degraded_performance' },
+    { name: 'Claude API (api.anthropic.com)', status: 'operational' },
+  ],
+}));
+render('degraded', { theme: 'dracula', separator: 'powerline', layout: statusLayout });
+
+// Partial outage
+writeFileSync(statusCache, JSON.stringify({
+  components: [
+    { name: 'Claude Code', status: 'operational' },
+    { name: 'Claude API (api.anthropic.com)', status: 'partial_outage' },
+  ],
+}));
+render('partial outage', { theme: 'dracula', separator: 'powerline', layout: statusLayout });
+
+// Major outage
+writeFileSync(statusCache, JSON.stringify({
+  components: [
+    { name: 'Claude Code', status: 'major_outage' },
+    { name: 'Claude API (api.anthropic.com)', status: 'operational' },
+  ],
+}));
+render('major outage', { theme: 'dracula', separator: 'powerline', layout: statusLayout });
+
+// All operational (nothing shown)
+writeFileSync(statusCache, JSON.stringify({
+  components: [
+    { name: 'Claude Code', status: 'operational' },
+    { name: 'Claude API (api.anthropic.com)', status: 'operational' },
+  ],
+}));
+render('operational', { theme: 'dracula', separator: 'powerline', layout: statusLayout });
+
+// Clean up status cache
+if (existsSync(statusCache)) unlinkSync(statusCache);
 
 console.log();
 cleanup();

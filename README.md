@@ -4,20 +4,20 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 
 [繁體中文](./README.zh-TW.md)
 
-![showcase](./images/showcase.png)
+![showcase](./images/showcase.jpg)
 
 ## Features
 
-- ⚡ **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (via OAuth endpoint, 60s cache)
-- 🌈 **Conditional Rainbow** — Progress bar automatically shifts to rainbow gradient at high context usage
-- 🎨 **10 Themes** — default, rainbow, nord, catppuccin, dracula, gruvbox, tokyo-night, solarized, one-dark, monokai
-- 📊 **8 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion
-- 🎯 **4 Bar Styles** — block `████░░░░`, dot `●●●●○○○○`, line `━━━━┅┅┅┅`, braille `⣿⣿⣿⣿⠀⠀⠀⠀`
-- 🔗 **5 Separators** — powerline, rounded, slash, minimal, none
-- 🎨 **13 Custom Colors** — Override any color with hex values
-- 📐 **Responsive Layout** — Auto-hide low-priority segments when terminal is narrow
-- 🔧 **Natural Language Config** — Configure via `/claude-statusline:customize dracula + dot + powerline`
-- 📢 **Promotion Segment** — Temporary: shows 1x/⚡2x context multiplier and peak/off-peak countdown during active promotions
+- **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (via OAuth endpoint, 60s cache)
+- **Conditional Rainbow** — Progress bar automatically shifts to rainbow gradient at high context usage
+- **10 Themes** — default, rainbow, nord, catppuccin, dracula, gruvbox, tokyo-night, solarized, one-dark, monokai
+- **9 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion, status
+- **4 Bar Styles** — block `████░░░░`, dot `●●●●○○○○`, line `━━━━┅┅┅┅`, braille `⣿⣿⣿⣿⠀⠀⠀⠀`
+- **5 Separators** — powerline, rounded, slash, minimal, none
+- **13 Custom Colors** — Override any color with hex values
+- **Responsive Layout** — Auto-hide low-priority segments when terminal is narrow
+- **Natural Language Config** — Configure via `/claude-statusline:customize dracula + dot + powerline`
+- **Promotion Segment** — Temporary: shows 1x/2x context multiplier and peak/off-peak countdown during active promotions
 
 ## Prerequisites
 
@@ -76,6 +76,14 @@ The progress bar automatically changes based on context usage:
 | `solarized` | Classic Solarized Dark |
 | `one-dark` | Atom One Dark |
 | `monokai` | Sublime Monokai |
+
+## Available Commands
+
+| Command | Usage |
+|---------|-------|
+| `/claude-statusline:setup` | Register statusline in `~/.claude/settings.json` |
+| `/claude-statusline:customize` | Interactive wizard or quick edit (e.g. `dracula + dot + powerline`) |
+| `/claude-statusline:customize show` | View current configuration |
 
 ## Configuration
 
@@ -204,6 +212,7 @@ Priority: `colors` field > theme definition > defaults.
 | `worktree` | Worktree label (when current_dir ≠ project_dir) |
 | `rate-limit` | 5h/7d quota usage + mini progress bar + reset countdown (60s cache) |
 | `promotion` | Time-limited promotion label (auto-hidden when inactive) |
+| `status` | Claude service status indicator (cached) |
 
 ## Uninstall
 
