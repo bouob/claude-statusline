@@ -8,7 +8,7 @@
 
 ## 功能特色
 
-- **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（OAuth endpoint，60 秒快取）
+- **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（Claude Code 2.1.80+ 原生 stdin，舊版 OAuth 降級）
 - **條件式彩虹** — 進度條在高 context 使用率時自動切換為彩虹漸層
 - **10 種主題** — default、rainbow、nord、catppuccin、dracula、gruvbox、tokyo-night、solarized、one-dark、monokai
 - **9 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion、status
@@ -210,7 +210,7 @@ node scripts/setup.js
 | `git` | 分支名 + dirty 狀態（5 秒快取） |
 | `project` | 專案資料夾名稱 |
 | `worktree` | Worktree 標籤（currentDir ≠ projectDir 時顯示） |
-| `rate-limit` | 5h/7d 配額用量 + mini 進度條 + 重置倒數（60 秒快取） |
+| `rate-limit` | 5h/7d 配額用量 + mini 進度條 + 重置倒數（原生 stdin，OAuth 降級） |
 | `promotion` | 限時促銷標籤（未啟用時自動隱藏） |
 | `status` | Claude 服務狀態指示器（快取） |
 

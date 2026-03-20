@@ -189,11 +189,22 @@ function renderWindow(
   return { text, width };
 }
 
+function fromStdin(ctx: SegmentContext): RateLimitData | null {
+  const rl = ctx.data.rateLimits;
+  if (!rl) return null;
+  return {
+    fiveHour: rl.fiveHour.usedPercentage,
+    sevenDay: rl.sevenDay.usedPercentage,
+    fiveHourReset: rl.fiveHour.resetsAt,
+    sevenDayReset: rl.sevenDay.resetsAt,
+  };
+}
+
 export const rateLimitSegment: Segment = {
   name: 'rate-limit',
   render(ctx: SegmentContext): SegmentOutput | null {
     const rlConfig = ctx.config.segments['rate-limit'];
-    const data = getRateLimitData();
+    const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
 
     const barWidth = rlConfig?.barWidth ?? 8;
