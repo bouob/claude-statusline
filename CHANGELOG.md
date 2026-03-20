@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/bouob/claude-statusline/compare/v0.6.0...v0.7.0) (2026-03-20)
+
+
+### Features
+
+* **sync:** sync updates from monorepo ([#15](https://github.com/bouob/claude-statusline/issues/15)) ([eae261c](https://github.com/bouob/claude-statusline/commit/eae261cd322dd3481a96f48b51017aee3067d600))
+
 ## [0.6.0](https://github.com/bouob/claude-statusline/compare/v0.5.1...v0.6.0) (2026-03-19)
 
 
