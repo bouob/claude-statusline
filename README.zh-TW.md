@@ -4,20 +4,20 @@
 
 [English](./README.md)
 
-![showcase](./images/showcase.png)
+![showcase](./images/showcase.jpg)
 
 ## 功能特色
 
-- ⚡ **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（OAuth endpoint，60 秒快取）
-- 🌈 **條件式彩虹** — 進度條在高 context 使用率時自動切換為彩虹漸層
-- 🎨 **10 種主題** — default、rainbow、nord、catppuccin、dracula、gruvbox、tokyo-night、solarized、one-dark、monokai
-- 📊 **8 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion
-- 🎯 **4 種進度條樣式** — 方塊 `████░░░░`、圓點 `●●●●○○○○`、細線 `━━━━┅┅┅┅`、點陣 `⣿⣿⣿⣿⠀⠀⠀⠀`
-- 🔗 **5 種分隔符** — powerline、rounded、slash、minimal、none
-- 🎨 **13 個自訂顏色** — 以 hex 值覆寫任意色彩
-- 📐 **自適應排版** — 終端寬度不足時自動隱藏低優先級段落
-- 🔧 **自然語言設定** — 透過 `/claude-statusline:customize dracula + dot + powerline` 直接設定
-- 📢 **促銷段落** — 限時功能：在促銷活動期間顯示 1x/⚡2x context 倍率與尖峰/離峰倒數
+- **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（OAuth endpoint，60 秒快取）
+- **條件式彩虹** — 進度條在高 context 使用率時自動切換為彩虹漸層
+- **10 種主題** — default、rainbow、nord、catppuccin、dracula、gruvbox、tokyo-night、solarized、one-dark、monokai
+- **9 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion、status
+- **4 種進度條樣式** — 方塊 `████░░░░`、圓點 `●●●●○○○○`、細線 `━━━━┅┅┅┅`、點陣 `⣿⣿⣿⣿⠀⠀⠀⠀`
+- **5 種分隔符** — powerline、rounded、slash、minimal、none
+- **13 個自訂顏色** — 以 hex 值覆寫任意色彩
+- **自適應排版** — 終端寬度不足時自動隱藏低優先級段落
+- **自然語言設定** — 透過 `/claude-statusline:customize dracula + dot + powerline` 直接設定
+- **促銷段落** — 限時功能：在促銷活動期間顯示 1x/2x context 倍率與尖峰/離峰倒數
 
 ## 前置需求
 
@@ -76,6 +76,14 @@ node scripts/setup.js
 | `solarized` | 經典 Solarized Dark |
 | `one-dark` | Atom One Dark |
 | `monokai` | Sublime Monokai |
+
+## 可用指令
+
+| 指令 | 用途 |
+|------|------|
+| `/claude-statusline:setup` | 將 statusline 註冊到 `~/.claude/settings.json` |
+| `/claude-statusline:customize` | 互動式精靈或快速編輯（如 `dracula + dot + powerline`） |
+| `/claude-statusline:customize show` | 檢視目前設定 |
 
 ## 設定方式
 
@@ -204,6 +212,7 @@ node scripts/setup.js
 | `worktree` | Worktree 標籤（currentDir ≠ projectDir 時顯示） |
 | `rate-limit` | 5h/7d 配額用量 + mini 進度條 + 重置倒數（60 秒快取） |
 | `promotion` | 限時促銷標籤（未啟用時自動隱藏） |
+| `status` | Claude 服務狀態指示器（快取） |
 
 ## 解除安裝
 
