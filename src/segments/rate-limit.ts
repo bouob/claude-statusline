@@ -18,7 +18,22 @@ interface RateLimitData {
 }
 
 const CACHE_FILE = join(tmpdir(), 'claude-statusline-ratelimit.json');
+const STATUS_CACHE_FILE = join(tmpdir(), 'claude-statusline-status.json');
 const CACHE_TTL = 60_000;
+
+function hasActiveStatusIssues(): boolean {
+  try {
+    const stat = statSync(STATUS_CACHE_FILE);
+    if (Date.now() - stat.mtimeMs > 600_000) return false;
+    const data = JSON.parse(readFileSync(STATUS_CACHE_FILE, 'utf-8'));
+    const targets = ['Claude Code', 'Claude API (api.anthropic.com)'];
+    return data.components?.some(
+      (c: { name: string; status: string }) => targets.includes(c.name) && c.status !== 'operational',
+    ) ?? false;
+  } catch {
+    return false;
+  }
+}
 
 function readCache(): RateLimitData | null {
   try {
@@ -211,9 +226,10 @@ export const rateLimitSegment: Segment = {
     const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
 
+    const compact = hasActiveStatusIssues();
     const barWidth = rlConfig?.barWidth ?? 8;
-    const showBar = rlConfig?.showBar ?? true;
-    const showReset = rlConfig?.showResetTime ?? true;
+    const showBar = compact ? false : (rlConfig?.showBar ?? true);
+    const showReset = compact ? false : (rlConfig?.showResetTime ?? true);
     const showFive = rlConfig?.showFiveHour ?? true;
     const showSeven = rlConfig?.showSevenDay ?? true;
     const useRainbow = rlConfig?.rainbow ?? false;

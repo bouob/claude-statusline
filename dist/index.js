@@ -379,7 +379,21 @@ import { join } from "path";
 import { homedir, tmpdir } from "os";
 import { execFileSync as execFileSync2 } from "child_process";
 var CACHE_FILE = join(tmpdir(), "claude-statusline-ratelimit.json");
+var STATUS_CACHE_FILE = join(tmpdir(), "claude-statusline-status.json");
 var CACHE_TTL2 = 6e4;
+function hasActiveStatusIssues() {
+  try {
+    const stat = statSync(STATUS_CACHE_FILE);
+    if (Date.now() - stat.mtimeMs > 6e5) return false;
+    const data = JSON.parse(readFileSync(STATUS_CACHE_FILE, "utf-8"));
+    const targets = ["Claude Code", "Claude API (api.anthropic.com)"];
+    return data.components?.some(
+      (c) => targets.includes(c.name) && c.status !== "operational"
+    ) ?? false;
+  } catch {
+    return false;
+  }
+}
 function readCache() {
   try {
     const stat = statSync(CACHE_FILE);
@@ -538,9 +552,10 @@ var rateLimitSegment = {
     const rlConfig = ctx.config.segments["rate-limit"];
     const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
+    const compact = hasActiveStatusIssues();
     const barWidth = rlConfig?.barWidth ?? 8;
-    const showBar = rlConfig?.showBar ?? true;
-    const showReset = rlConfig?.showResetTime ?? true;
+    const showBar = compact ? false : rlConfig?.showBar ?? true;
+    const showReset = compact ? false : rlConfig?.showResetTime ?? true;
     const showFive = rlConfig?.showFiveHour ?? true;
     const showSeven = rlConfig?.showSevenDay ?? true;
     const useRainbow = rlConfig?.rainbow ?? false;
@@ -676,13 +691,25 @@ var statusSegment = {
       return { short, label, status: c.status };
     });
     if (issues.length === 0) return null;
-    const parts = issues.map((i) => {
-      const color = i.status === "major_outage" ? ctx.theme.critical : ctx.theme.warning;
-      return colorize(`${i.short}:${i.label}`, color, ctx.colorDepth);
-    });
+    const grouped = /* @__PURE__ */ new Map();
+    for (const i of issues) {
+      const existing = grouped.get(i.label);
+      if (existing) existing.push(i);
+      else grouped.set(i.label, [i]);
+    }
+    const parts = [];
+    let totalWidth = 0;
+    for (const [label, group] of grouped) {
+      const worstStatus = group.some((g) => g.status === "major_outage") ? "major_outage" : group[0].status;
+      const color = worstStatus === "major_outage" ? ctx.theme.critical : ctx.theme.warning;
+      const names = group.map((g) => g.short).join(",");
+      const raw = `${names}:${label}`;
+      parts.push(colorize(raw, color, ctx.colorDepth));
+      totalWidth += raw.length;
+    }
     const icon = "\u26A0";
     const text = `${icon} ${parts.join(" ")}`;
-    const width = icon.length + 1 + issues.map((i) => i.short.length + 1 + i.label.length).reduce((a, b) => a + b, 0) + (issues.length - 1);
+    const width = icon.length + 1 + totalWidth + (parts.length - 1);
     return { text, width };
   }
 };
