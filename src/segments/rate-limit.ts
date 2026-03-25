@@ -13,8 +13,8 @@ import type { BarStyle } from '../config/types.js';
 interface RateLimitData {
   fiveHour: number;
   sevenDay: number;
-  fiveHourReset: string | null;
-  sevenDayReset: string | null;
+  fiveHourReset: string | number | null;
+  sevenDayReset: string | number | null;
 }
 
 const CACHE_FILE = join(tmpdir(), 'claude-statusline-ratelimit.json');
@@ -82,6 +82,7 @@ function fetchUsage(token: string): RateLimitData | null {
     });
 
     const data = JSON.parse(result);
+    if (data.error || !data.five_hour) return null;
     return {
       fiveHour: Number(data.five_hour?.utilization ?? 0),
       sevenDay: Number(data.seven_day?.utilization ?? 0),
@@ -111,10 +112,13 @@ function getColor(pct: number, ctx: SegmentContext): RGB {
   return resolveColor(ctx, 'progressNormal', ctx.theme.primary);
 }
 
-function formatResetTime(resetAt: string | null): string {
+function formatResetTime(resetAt: string | number | null): string {
   if (!resetAt) return '';
   try {
-    const resetDate = new Date(resetAt);
+    const ts = typeof resetAt === 'number'
+      ? (resetAt < 1e12 ? resetAt * 1000 : resetAt)
+      : resetAt;
+    const resetDate = new Date(ts);
     const now = new Date();
     const diffMs = resetDate.getTime() - now.getTime();
     if (diffMs <= 0) return '';
@@ -156,7 +160,7 @@ function miniBar(pct: number, barWidth: number, ctx: SegmentContext, useRainbow:
 function renderWindow(
   label: string,
   pct: number,
-  resetAt: string | null,
+  resetAt: string | number | null,
   barWidth: number,
   showBar: boolean,
   showReset: boolean,

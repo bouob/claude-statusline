@@ -439,6 +439,7 @@ function fetchUsage(token) {
       stdio: ["pipe", "pipe", "pipe"]
     });
     const data = JSON.parse(result);
+    if (data.error || !data.five_hour) return null;
     return {
       fiveHour: Number(data.five_hour?.utilization ?? 0),
       sevenDay: Number(data.seven_day?.utilization ?? 0),
@@ -466,7 +467,8 @@ function getColor(pct, ctx) {
 function formatResetTime(resetAt) {
   if (!resetAt) return "";
   try {
-    const resetDate = new Date(resetAt);
+    const ts = typeof resetAt === "number" ? resetAt < 1e12 ? resetAt * 1e3 : resetAt : resetAt;
+    const resetDate = new Date(ts);
     const now = /* @__PURE__ */ new Date();
     const diffMs = resetDate.getTime() - now.getTime();
     if (diffMs <= 0) return "";
