@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/bouob/claude-statusline/compare/v0.9.1...v0.10.0) (2026-03-25)
+
+
+### Features
+
+* **sync:** sync claude-statusline updates 2026-03-26 ([#24](https://github.com/bouob/claude-statusline/issues/24)) ([b68a378](https://github.com/bouob/claude-statusline/commit/b68a378465b03945e949209cf87ba8f6db2bebfb))
+
 ## [0.9.1](https://github.com/bouob/claude-statusline/compare/v0.9.0...v0.9.1) (2026-03-25)
 
 
