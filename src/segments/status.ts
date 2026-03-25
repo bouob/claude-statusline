@@ -6,9 +6,11 @@ import type { Segment, SegmentContext } from './base.js';
 import type { SegmentOutput } from '../types.js';
 import { colorize } from '../color/ansi.js';
 
-const CACHE_FILE = join(tmpdir(), 'claude-statusline-status.json');
+export const STATUS_CACHE_FILE = join(tmpdir(), 'claude-statusline-status.json');
+const CACHE_FILE = STATUS_CACHE_FILE;
 const API_URL = 'https://status.claude.com/api/v2/summary.json';
-const TARGETS = ['Claude Code', 'Claude API (api.anthropic.com)'];
+export const STATUS_TARGETS = ['Claude Code', 'Claude API (api.anthropic.com)'];
+const TARGETS = STATUS_TARGETS;
 
 const STATUS_LABELS: Record<string, string> = {
   degraded_performance: 'degraded',
@@ -69,14 +71,28 @@ export const statusSegment: Segment = {
 
     if (issues.length === 0) return null;
 
-    const parts = issues.map(i => {
-      const color = i.status === 'major_outage' ? ctx.theme.critical : ctx.theme.warning;
-      return colorize(`${i.short}:${i.label}`, color, ctx.colorDepth);
-    });
+    // Group by label so "Code:degraded API:degraded" becomes "Code,API:degraded"
+    const grouped = new Map<string, typeof issues>();
+    for (const i of issues) {
+      const existing = grouped.get(i.label);
+      if (existing) existing.push(i);
+      else grouped.set(i.label, [i]);
+    }
+
+    const parts: string[] = [];
+    let totalWidth = 0;
+    for (const [label, group] of grouped) {
+      const worstStatus = group.some(g => g.status === 'major_outage') ? 'major_outage' : group[0].status;
+      const color = worstStatus === 'major_outage' ? ctx.theme.critical : ctx.theme.warning;
+      const names = group.map(g => g.short).join(',');
+      const raw = `${names}:${label}`;
+      parts.push(colorize(raw, color, ctx.colorDepth));
+      totalWidth += raw.length;
+    }
 
     const icon = '\u26A0';
     const text = `${icon} ${parts.join(' ')}`;
-    const width = icon.length + 1 + issues.map(i => i.short.length + 1 + i.label.length).reduce((a, b) => a + b, 0) + (issues.length - 1);
+    const width = icon.length + 1 + totalWidth + (parts.length - 1);
 
     return { text, width };
   },

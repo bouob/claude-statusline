@@ -4,6 +4,7 @@ import { homedir, tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import type { Segment, SegmentContext } from './base.js';
 import { resolveColor } from './base.js';
+import { STATUS_CACHE_FILE, STATUS_TARGETS } from './status.js';
 import type { SegmentOutput, RGB } from '../types.js';
 import { fg, reset, colorize } from '../color/ansi.js';
 import { rainbowGradient } from '../color/gradient.js';
@@ -19,6 +20,21 @@ interface RateLimitData {
 
 const CACHE_FILE = join(tmpdir(), 'claude-statusline-ratelimit.json');
 const CACHE_TTL = 60_000;
+
+function hasActiveStatusIssues(ctx: SegmentContext): boolean {
+  try {
+    const stat = statSync(STATUS_CACHE_FILE);
+    const statusConfig = ctx.config.segments['status'];
+    const ttl = (statusConfig?.cacheTtlSeconds ?? 300) * 1000;
+    if (Date.now() - stat.mtimeMs > ttl) return false;
+    const data = JSON.parse(readFileSync(STATUS_CACHE_FILE, 'utf-8'));
+    return data.components?.some(
+      (c: { name: string; status: string }) => STATUS_TARGETS.includes(c.name) && c.status !== 'operational',
+    ) ?? false;
+  } catch {
+    return false;
+  }
+}
 
 function readCache(): RateLimitData | null {
   try {
@@ -211,9 +227,10 @@ export const rateLimitSegment: Segment = {
     const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
 
+    const compact = hasActiveStatusIssues(ctx);
     const barWidth = rlConfig?.barWidth ?? 8;
-    const showBar = rlConfig?.showBar ?? true;
-    const showReset = rlConfig?.showResetTime ?? true;
+    const showBar = compact ? false : (rlConfig?.showBar ?? true);
+    const showReset = compact ? false : (rlConfig?.showResetTime ?? true);
     const showFive = rlConfig?.showFiveHour ?? true;
     const showSeven = rlConfig?.showSevenDay ?? true;
     const useRainbow = rlConfig?.rainbow ?? false;

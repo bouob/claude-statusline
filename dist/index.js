@@ -374,17 +374,109 @@ var worktreeSegment = {
 };
 
 // src/segments/rate-limit.ts
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, statSync as statSync2 } from "fs";
+import { join as join2 } from "path";
+import { homedir, tmpdir as tmpdir2 } from "os";
+import { execFileSync as execFileSync3 } from "child_process";
+
+// src/segments/status.ts
 import { readFileSync, writeFileSync, statSync } from "fs";
 import { join } from "path";
-import { homedir, tmpdir } from "os";
+import { tmpdir } from "os";
 import { execFileSync as execFileSync2 } from "child_process";
-var CACHE_FILE = join(tmpdir(), "claude-statusline-ratelimit.json");
-var CACHE_TTL2 = 6e4;
-function readCache() {
+var STATUS_CACHE_FILE = join(tmpdir(), "claude-statusline-status.json");
+var CACHE_FILE = STATUS_CACHE_FILE;
+var API_URL = "https://status.claude.com/api/v2/summary.json";
+var STATUS_TARGETS = ["Claude Code", "Claude API (api.anthropic.com)"];
+var TARGETS = STATUS_TARGETS;
+var STATUS_LABELS = {
+  degraded_performance: "degraded",
+  partial_outage: "partial",
+  major_outage: "outage",
+  under_maintenance: "maint"
+};
+function readCache(ttl) {
   try {
     const stat = statSync(CACHE_FILE);
+    if (Date.now() - stat.mtimeMs > ttl) return null;
+    return JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+function fetchStatus() {
+  try {
+    const raw = execFileSync2("curl", [
+      "-s",
+      "--max-time",
+      "3",
+      API_URL
+    ], { encoding: "utf-8", timeout: 4e3, stdio: ["pipe", "pipe", "pipe"] });
+    const data = JSON.parse(raw);
+    writeFileSync(CACHE_FILE, raw, "utf-8");
+    return data;
+  } catch {
+    return null;
+  }
+}
+var statusSegment = {
+  name: "status",
+  render(ctx) {
+    const statusConfig = ctx.config.segments["status"];
+    const ttl = (statusConfig?.cacheTtlSeconds ?? 300) * 1e3;
+    const data = readCache(ttl) ?? fetchStatus();
+    if (!data?.components) return null;
+    const issues = data.components.filter((c) => TARGETS.includes(c.name) && c.status !== "operational").map((c) => {
+      const label = STATUS_LABELS[c.status] ?? c.status;
+      const short = c.name.replace(/^Claude /, "").replace(/ \(.*\)$/, "");
+      return { short, label, status: c.status };
+    });
+    if (issues.length === 0) return null;
+    const grouped = /* @__PURE__ */ new Map();
+    for (const i of issues) {
+      const existing = grouped.get(i.label);
+      if (existing) existing.push(i);
+      else grouped.set(i.label, [i]);
+    }
+    const parts = [];
+    let totalWidth = 0;
+    for (const [label, group] of grouped) {
+      const worstStatus = group.some((g) => g.status === "major_outage") ? "major_outage" : group[0].status;
+      const color = worstStatus === "major_outage" ? ctx.theme.critical : ctx.theme.warning;
+      const names = group.map((g) => g.short).join(",");
+      const raw = `${names}:${label}`;
+      parts.push(colorize(raw, color, ctx.colorDepth));
+      totalWidth += raw.length;
+    }
+    const icon = "\u26A0";
+    const text = `${icon} ${parts.join(" ")}`;
+    const width = icon.length + 1 + totalWidth + (parts.length - 1);
+    return { text, width };
+  }
+};
+
+// src/segments/rate-limit.ts
+var CACHE_FILE2 = join2(tmpdir2(), "claude-statusline-ratelimit.json");
+var CACHE_TTL2 = 6e4;
+function hasActiveStatusIssues(ctx) {
+  try {
+    const stat = statSync2(STATUS_CACHE_FILE);
+    const statusConfig = ctx.config.segments["status"];
+    const ttl = (statusConfig?.cacheTtlSeconds ?? 300) * 1e3;
+    if (Date.now() - stat.mtimeMs > ttl) return false;
+    const data = JSON.parse(readFileSync2(STATUS_CACHE_FILE, "utf-8"));
+    return data.components?.some(
+      (c) => STATUS_TARGETS.includes(c.name) && c.status !== "operational"
+    ) ?? false;
+  } catch {
+    return false;
+  }
+}
+function readCache2() {
+  try {
+    const stat = statSync2(CACHE_FILE2);
     if (Date.now() - stat.mtimeMs > CACHE_TTL2) return null;
-    const raw = readFileSync(CACHE_FILE, "utf-8");
+    const raw = readFileSync2(CACHE_FILE2, "utf-8");
     return JSON.parse(raw);
   } catch {
     return null;
@@ -392,14 +484,14 @@ function readCache() {
 }
 function writeCache(data) {
   try {
-    writeFileSync(CACHE_FILE, JSON.stringify(data));
+    writeFileSync2(CACHE_FILE2, JSON.stringify(data));
   } catch {
   }
 }
 function getAccessToken() {
-  const credentialsPath = join(homedir(), ".claude", ".credentials.json");
+  const credentialsPath = join2(homedir(), ".claude", ".credentials.json");
   try {
-    const raw = readFileSync(credentialsPath, "utf-8");
+    const raw = readFileSync2(credentialsPath, "utf-8");
     const creds = JSON.parse(raw);
     const token = creds?.claudeAiOauth?.accessToken;
     if (token) return token;
@@ -407,7 +499,7 @@ function getAccessToken() {
   }
   if (process.platform === "darwin") {
     try {
-      const raw = execFileSync2("security", [
+      const raw = execFileSync3("security", [
         "find-generic-password",
         "-s",
         "Claude Code-credentials",
@@ -422,7 +514,7 @@ function getAccessToken() {
 }
 function fetchUsage(token) {
   try {
-    const result = execFileSync2("curl", [
+    const result = execFileSync3("curl", [
       "-s",
       "--max-time",
       "3",
@@ -451,7 +543,7 @@ function fetchUsage(token) {
   }
 }
 function getRateLimitData() {
-  const cached = readCache();
+  const cached = readCache2();
   if (cached) return cached;
   const token = getAccessToken();
   if (!token) return null;
@@ -538,9 +630,10 @@ var rateLimitSegment = {
     const rlConfig = ctx.config.segments["rate-limit"];
     const data = fromStdin(ctx) ?? getRateLimitData();
     if (!data) return null;
+    const compact = hasActiveStatusIssues(ctx);
     const barWidth = rlConfig?.barWidth ?? 8;
-    const showBar = rlConfig?.showBar ?? true;
-    const showReset = rlConfig?.showResetTime ?? true;
+    const showBar = compact ? false : rlConfig?.showBar ?? true;
+    const showReset = compact ? false : rlConfig?.showResetTime ?? true;
     const showFive = rlConfig?.showFiveHour ?? true;
     const showSeven = rlConfig?.showSevenDay ?? true;
     const useRainbow = rlConfig?.rainbow ?? false;
@@ -622,68 +715,6 @@ var promotionSegment = {
     const raw = `1x ${countdown}`;
     const text = colorize(raw, peakColor, ctx.colorDepth);
     return { text, width: raw.length };
-  }
-};
-
-// src/segments/status.ts
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, statSync as statSync2 } from "fs";
-import { join as join2 } from "path";
-import { tmpdir as tmpdir2 } from "os";
-import { execFileSync as execFileSync3 } from "child_process";
-var CACHE_FILE2 = join2(tmpdir2(), "claude-statusline-status.json");
-var API_URL = "https://status.claude.com/api/v2/summary.json";
-var TARGETS = ["Claude Code", "Claude API (api.anthropic.com)"];
-var STATUS_LABELS = {
-  degraded_performance: "degraded",
-  partial_outage: "partial",
-  major_outage: "outage",
-  under_maintenance: "maint"
-};
-function readCache2(ttl) {
-  try {
-    const stat = statSync2(CACHE_FILE2);
-    if (Date.now() - stat.mtimeMs > ttl) return null;
-    return JSON.parse(readFileSync2(CACHE_FILE2, "utf-8"));
-  } catch {
-    return null;
-  }
-}
-function fetchStatus() {
-  try {
-    const raw = execFileSync3("curl", [
-      "-s",
-      "--max-time",
-      "3",
-      API_URL
-    ], { encoding: "utf-8", timeout: 4e3, stdio: ["pipe", "pipe", "pipe"] });
-    const data = JSON.parse(raw);
-    writeFileSync2(CACHE_FILE2, raw, "utf-8");
-    return data;
-  } catch {
-    return null;
-  }
-}
-var statusSegment = {
-  name: "status",
-  render(ctx) {
-    const statusConfig = ctx.config.segments["status"];
-    const ttl = (statusConfig?.cacheTtlSeconds ?? 300) * 1e3;
-    const data = readCache2(ttl) ?? fetchStatus();
-    if (!data?.components) return null;
-    const issues = data.components.filter((c) => TARGETS.includes(c.name) && c.status !== "operational").map((c) => {
-      const label = STATUS_LABELS[c.status] ?? c.status;
-      const short = c.name.replace(/^Claude /, "").replace(/ \(.*\)$/, "");
-      return { short, label, status: c.status };
-    });
-    if (issues.length === 0) return null;
-    const parts = issues.map((i) => {
-      const color = i.status === "major_outage" ? ctx.theme.critical : ctx.theme.warning;
-      return colorize(`${i.short}:${i.label}`, color, ctx.colorDepth);
-    });
-    const icon = "\u26A0";
-    const text = `${icon} ${parts.join(" ")}`;
-    const width = icon.length + 1 + issues.map((i) => i.short.length + 1 + i.label.length).reduce((a, b) => a + b, 0) + (issues.length - 1);
-    return { text, width };
   }
 };
 
