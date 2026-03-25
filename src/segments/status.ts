@@ -6,9 +6,11 @@ import type { Segment, SegmentContext } from './base.js';
 import type { SegmentOutput } from '../types.js';
 import { colorize } from '../color/ansi.js';
 
-const CACHE_FILE = join(tmpdir(), 'claude-statusline-status.json');
+export const STATUS_CACHE_FILE = join(tmpdir(), 'claude-statusline-status.json');
+const CACHE_FILE = STATUS_CACHE_FILE;
 const API_URL = 'https://status.claude.com/api/v2/summary.json';
-const TARGETS = ['Claude Code', 'Claude API (api.anthropic.com)'];
+export const STATUS_TARGETS = ['Claude Code', 'Claude API (api.anthropic.com)'];
+const TARGETS = STATUS_TARGETS;
 
 const STATUS_LABELS: Record<string, string> = {
   degraded_performance: 'degraded',
