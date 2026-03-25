@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Zero-dependency statusline for Claude Code with rainbow progress bar, 10 themes, rate limit monitoring, and natural language configuration.",
-    "version": "0.9.0"
+    "version": "0.9.1"
   },
   "plugins": [
     {
