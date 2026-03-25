@@ -1,6 +1,6 @@
 {
   "name": "claude-statusline",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Zero-dependency statusline for Claude Code with rainbow progress bar, 10 themes, rate limit monitoring, and natural language configuration.",
   "author": {
     "name": "Victor",
