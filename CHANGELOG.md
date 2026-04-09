@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.0](https://github.com/bouob/claude-statusline/compare/v0.11.0...v0.12.0) (2026-04-09)
+
+
+### Features
+
+* **statusline:** add SessionStart hook for auto-updating stale paths ([41aacc0](https://github.com/bouob/claude-statusline/commit/41aacc08b91aecf3bf23e82f2ad8e24f92c75e1e))
+
+
+### Bug Fixes
+
+* **claude-statusline:** sync updates 2026-04-09 ([d2f20a3](https://github.com/bouob/claude-statusline/commit/d2f20a3d3c56191943f63277ed48d72d092eb389))
+* **statusline:** preserve existing statusLine settings on upgrade ([2a2b1a8](https://github.com/bouob/claude-statusline/commit/2a2b1a89e7454da85cb83fb195d5f3a5b7c42446))
+
 ## [0.11.0](https://github.com/bouob/claude-statusline/compare/v0.10.0...v0.11.0) (2026-03-25)
 
 
