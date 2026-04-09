@@ -48,8 +48,9 @@ function main() {
     return;
   }
 
-  // Write statusLine config (preserve all other settings)
+  // Write statusLine config, preserving user-set fields like refreshInterval
   settings.statusLine = {
+    ...settings.statusLine,
     type: 'command',
     command,
   };
