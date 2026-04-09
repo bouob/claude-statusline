@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout plugin repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: plugin
 
       - name: Checkout marketplace repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: bouob/claude-plugins
           token: ${{ secrets.MARKETPLACE_TOKEN }}
