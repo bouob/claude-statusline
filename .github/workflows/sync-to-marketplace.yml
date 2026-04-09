@@ -7,14 +7,16 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout plugin repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           path: plugin
 
       - name: Checkout marketplace repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           repository: bouob/claude-plugins
           token: ${{ secrets.MARKETPLACE_TOKEN }}
@@ -31,10 +33,15 @@ jobs:
             -not -path './.git/*' -not -path './.git' \
             -not -path './.github/*' -not -path './.github' \
             -not -path './node_modules/*' -not -path './node_modules' \
+            -not -path './src/*' -not -path './src' \
+            -not -path './scripts/*' -not -path './scripts' \
             -not -name '.gitignore' \
             -not -name '.release-please-manifest.json' \
             -not -name 'release-please-config.json' \
             -not -name 'CHANGELOG.md' \
+            -not -name 'tsconfig.json' \
+            -not -name 'tsup.config.ts' \
+            -not -name 'package-lock.json' \
             | while read -r item; do
                 if [ -d "$item" ]; then
                   mkdir -p "../$PLUGIN_DIR/$item"
