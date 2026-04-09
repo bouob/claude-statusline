@@ -183,6 +183,26 @@ node scripts/setup.js
 
 </details>
 
+### 自動刷新 Refresh Interval
+
+> 需要 Claude Code **v2.1.97+**
+
+預設情況下 Claude Code 只會在每個回合結束後呼叫一次 statusline，因此 context bar、rate-limit、session 時長等動態段落在長回合的中途不會更新。若想讓 statusline 定期重繪，在 `~/.claude/settings.json` 加入 `refreshInterval`：
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "node /path/to/claude-statusline/dist/index.js",
+    "refreshInterval": 30
+  }
+}
+```
+
+`refreshInterval` 單位為秒，建議值 `30` — 兼顧動態更新的即時性與每次重啟的開銷（約 50–100 ms/次）。
+
+注意：`refreshInterval` 屬於 **Claude Code 核心設定**，不是 plugin 設定 — 它放在 `settings.json`，不是 `claude-statusline.json`。執行 setup 時腳本會保留你既有的 `refreshInterval` 設定，不會被覆蓋。
+
 ### 自訂顏色
 
 可用 hex 值（`#RGB` 或 `#RRGGBB`）覆寫 13 個色彩 key：

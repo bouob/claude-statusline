@@ -183,6 +183,26 @@ Only include the fields you want to override — everything else uses theme defa
 
 </details>
 
+### Refresh Interval
+
+> Requires Claude Code **v2.1.97+**
+
+By default, Claude Code only invokes the statusline command after each turn completes. Dynamic segments (context bar, rate limit, session duration) therefore stay frozen during long-running turns. To make the statusline update on a timer, add `refreshInterval` to `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "node /path/to/claude-statusline/dist/index.js",
+    "refreshInterval": 30
+  }
+}
+```
+
+`refreshInterval` is measured in seconds. Recommended value: `30` — balances responsiveness against startup overhead (~50–100 ms per tick).
+
+Note: `refreshInterval` is a **Claude Code core setting**, not a plugin config — it lives in `settings.json`, not `claude-statusline.json`. The setup script preserves any `refreshInterval` you have set when re-registering the statusline.
+
 ### Custom Colors
 
 Override any of the 13 color keys with hex values (`#RGB` or `#RRGGBB`):
