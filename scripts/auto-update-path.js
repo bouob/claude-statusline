@@ -64,6 +64,7 @@ function main() {
 
   const newCommand = `node ${latestPath}`;
   settings.statusLine = {
+    ...settings.statusLine,
     type: 'command',
     command: newCommand,
   };
