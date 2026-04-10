@@ -19,6 +19,7 @@ export interface StatusData {
     currentDir: string;
     projectDir: string;
     projectName: string;
+    gitWorktree?: string;
   };
   exceeds200k: boolean;
   rateLimits?: {

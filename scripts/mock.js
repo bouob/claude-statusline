@@ -12,6 +12,16 @@ const scenarios = [
   { label: 'Critical (88%)', pct: 88, remaining: 12, exceeds: false },
   { label: 'Rainbow - context (95%)', pct: 95, remaining: 5, exceeds: false },
   { label: 'Rainbow - exceeds 200k', pct: 40, remaining: 60, exceeds: true },
+  {
+    label: 'Worktree - linked (git_worktree field)',
+    pct: 5, remaining: 95, exceeds: false,
+    workspaceOverride: {
+      current_dir: 'D:\\Desktop\\side-project\\.worktrees\\feature-auth',
+      project_dir: 'D:\\Desktop\\side-project',
+      added_dirs: [],
+      git_worktree: 'feature-auth',
+    },
+  },
 ];
 
 for (const s of scenarios) {
@@ -19,7 +29,7 @@ for (const s of scenarios) {
     session_id: 'mock-session',
     cwd: 'D:\\Desktop\\side-project',
     model: { id: 'claude-opus-4-6[1m]', display_name: 'Opus 4.6 (1M context)' },
-    workspace: {
+    workspace: s.workspaceOverride ?? {
       current_dir: 'D:\\Desktop\\side-project',
       project_dir: 'D:\\Desktop\\side-project',
       added_dirs: [],

@@ -26,7 +26,8 @@ function parseInput(raw) {
       workspace: {
         currentDir: String(d.workspace?.current_dir ?? d.cwd ?? ""),
         projectDir,
-        projectName: basename(projectDir) || ""
+        projectName: basename(projectDir) || "",
+        gitWorktree: typeof d.workspace?.git_worktree === "string" && d.workspace.git_worktree ? d.workspace.git_worktree : void 0
       },
       exceeds200k: Boolean(d.exceeds_200k_tokens),
       rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day ? {
@@ -363,10 +364,14 @@ function isSubdirectory(child, parent) {
 var worktreeSegment = {
   name: "worktree",
   render(ctx) {
-    const current = ctx.data.workspace.currentDir;
-    const project = ctx.data.workspace.projectDir;
-    if (!current || !project || isSubdirectory(current, project)) return null;
-    const raw = "[worktree]";
+    const { currentDir, projectDir, gitWorktree } = ctx.data.workspace;
+    let raw = null;
+    if (gitWorktree) {
+      raw = `[${gitWorktree}]`;
+    } else if (currentDir && projectDir && !isSubdirectory(currentDir, projectDir)) {
+      raw = "[worktree]";
+    }
+    if (!raw) return null;
     const color = resolveColor(ctx, "worktree", COLORS.magenta);
     const text = colorize(raw, color, ctx.colorDepth);
     return { text, width: raw.length };

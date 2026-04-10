@@ -18,13 +18,22 @@ function isSubdirectory(child: string, parent: string): boolean {
 export const worktreeSegment: Segment = {
   name: 'worktree',
   render(ctx: SegmentContext): SegmentOutput | null {
-    const current = ctx.data.workspace.currentDir;
-    const project = ctx.data.workspace.projectDir;
-    // Show [worktree] only when current_dir is NOT the project or a subdirectory of it
-    // (i.e., a real git worktree in a different location)
-    if (!current || !project || isSubdirectory(current, project)) return null;
+    const { currentDir, projectDir, gitWorktree } = ctx.data.workspace;
 
-    const raw = '[worktree]';
+    // Priority 1: official field (Claude Code 2.1.97+)
+    // Shows the actual worktree name, e.g. [feature-auth]
+    let raw: string | null = null;
+    if (gitWorktree) {
+      raw = `[${gitWorktree}]`;
+    }
+    // Priority 2: legacy heuristic (pre-2.1.97 fallback)
+    // Older Claude Code doesn't send git_worktree; infer from path divergence.
+    else if (currentDir && projectDir && !isSubdirectory(currentDir, projectDir)) {
+      raw = '[worktree]';
+    }
+
+    if (!raw) return null;
+
     const color = resolveColor(ctx, 'worktree', COLORS.magenta);
     const text = colorize(raw, color, ctx.colorDepth);
     return { text, width: raw.length };
