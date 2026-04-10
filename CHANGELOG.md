@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.0](https://github.com/bouob/claude-statusline/compare/v0.12.0...v0.13.0) (2026-04-10)
+
+
+### Features
+
+* **statusline:** sync updates 2026-04-10 ([a713f84](https://github.com/bouob/claude-statusline/commit/a713f84d33aee67918b0e30c67f18800cf0447e1))
+* **statusline:** use official workspace.git_worktree field for worktree name ([b077768](https://github.com/bouob/claude-statusline/commit/b077768df4e9def86a0bda38660bbab1362811c1))
+
 ## [0.12.0](https://github.com/bouob/claude-statusline/compare/v0.11.0...v0.12.0) (2026-04-09)
 
 
