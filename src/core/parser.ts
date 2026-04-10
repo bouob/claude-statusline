@@ -29,6 +29,9 @@ export function parseInput(raw: string): StatusData | null {
         currentDir: String(d.workspace?.current_dir ?? d.cwd ?? ''),
         projectDir,
         projectName: basename(projectDir) || '',
+        gitWorktree: typeof d.workspace?.git_worktree === 'string' && d.workspace.git_worktree
+          ? d.workspace.git_worktree
+          : undefined,
       },
       exceeds200k: Boolean(d.exceeds_200k_tokens),
       rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day
