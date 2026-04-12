@@ -1,0 +1,28 @@
+{
+  "name": "claude-statusline",
+  "version": "0.24.0",
+  "description": "Conditional rainbow statusline for Claude Code",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "mock": "node scripts/mock.js | node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "claude-code",
+    "statusline",
+    "rainbow"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bouob/claude-statusline.git"
+  }
+}

@@ -1,0 +1,71 @@
+name: Sync to marketplace
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout plugin repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          path: plugin
+
+      - name: Checkout marketplace repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          repository: bouob/claude-plugins
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
+          path: marketplace
+
+      - name: Sync plugin files
+        run: |
+          PLUGIN_DIR="marketplace/plugins/claude-statusline"
+          rm -rf "$PLUGIN_DIR"
+          mkdir -p "$PLUGIN_DIR"
+
+          cd plugin
+          find . \
+            -not -path './.git/*' -not -path './.git' \
+            -not -path './.github/*' -not -path './.github' \
+            -not -path './node_modules/*' -not -path './node_modules' \
+            -not -path './src/*' -not -path './src' \
+            -not -name 'ansi2html.js' \
+            -not -name 'mock.js' \
+            -not -name 'showcase.js' \
+            -not -name '.gitignore' \
+            -not -name '.release-please-manifest.json' \
+            -not -name 'release-please-config.json' \
+            -not -name 'CHANGELOG.md' \
+            -not -name 'tsconfig.json' \
+            -not -name 'tsup.config.ts' \
+            -not -name 'package-lock.json' \
+            | while read -r item; do
+                if [ -d "$item" ]; then
+                  mkdir -p "../$PLUGIN_DIR/$item"
+                elif [ -f "$item" ]; then
+                  cp "$item" "../$PLUGIN_DIR/$item"
+                fi
+              done
+
+      - name: Create PR and auto-merge
+        working-directory: marketplace
+        env:
+          GH_TOKEN: ${{ secrets.MARKETPLACE_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          BRANCH="sync/claude-statusline-${TAG}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add -A
+          git diff --cached --quiet && echo "No changes to sync" && exit 0
+          git commit -m "sync: claude-statusline ${TAG}"
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create --title "sync: claude-statusline ${TAG}" --body "Automated sync from claude-statusline ${TAG}.")
+          gh pr merge "$PR_URL" --squash
