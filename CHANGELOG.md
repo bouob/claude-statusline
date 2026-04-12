@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.13.1](https://github.com/bouob/claude-statusline/compare/v0.13.0...v0.13.1) (2026-04-12)
+
+
+### Bug Fixes
+
+* **ci:** skip release-please labeling to avoid stale PR reference error ([28c9203](https://github.com/bouob/claude-statusline/commit/28c92037f64defdee5762a9d97e953f0e33b2382))
+* **ci:** skip release-please labeling to avoid stale PR reference error ([cf8f61e](https://github.com/bouob/claude-statusline/commit/cf8f61e5e6cc5f69b52cee520f13d122b49389e6))
+* **sync:** include runtime scripts in marketplace sync ([#33](https://github.com/bouob/claude-statusline/issues/33)) ([aa7617c](https://github.com/bouob/claude-statusline/commit/aa7617c9617aad6e6bcc910650ec7d4b116aa096))
+
 ## [0.13.0](https://github.com/bouob/claude-statusline/compare/v0.12.0...v0.13.0) (2026-04-10)
 
 
