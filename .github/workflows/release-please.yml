@@ -19,6 +19,7 @@ jobs:
           token: ${{ secrets.MARKETPLACE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-labeling: true
 
       - name: Auto-merge release PR
         if: steps.release.outputs.prs_created == 'true'
