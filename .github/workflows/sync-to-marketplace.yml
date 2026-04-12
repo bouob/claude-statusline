@@ -34,7 +34,9 @@ jobs:
             -not -path './.github/*' -not -path './.github' \
             -not -path './node_modules/*' -not -path './node_modules' \
             -not -path './src/*' -not -path './src' \
-            -not -path './scripts/*' -not -path './scripts' \
+            -not -name 'ansi2html.js' \
+            -not -name 'mock.js' \
+            -not -name 'showcase.js' \
             -not -name '.gitignore' \
             -not -name '.release-please-manifest.json' \
             -not -name 'release-please-config.json' \
