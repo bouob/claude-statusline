@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/bouob/claude-statusline/compare/v0.24.0...v0.24.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* support bun runtime in SessionStart auto-update hook ([#49](https://github.com/bouob/claude-statusline/issues/49)) ([6085b3c](https://github.com/bouob/claude-statusline/commit/6085b3c4c52e12664a6849d9fa6c620bbfbc6e6c))
+
 ## [0.24.0](https://github.com/bouob/claude-statusline/compare/v0.23.0...v0.24.0) (2026-04-12)
 
 
