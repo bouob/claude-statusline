@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-update-path.js"
+            "command": "if command -v node >/dev/null 2>&1; then node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-update-path.js; elif command -v bun >/dev/null 2>&1; then bun ${CLAUDE_PLUGIN_ROOT}/scripts/auto-update-path.js; fi"
           }
         ]
       }
