@@ -130,6 +130,9 @@ Show the complete config JSON for review. After confirmation, write and rebuild.
 | `hide git` / `show worktree` / `disable model` | `segments.<name>.enabled` |
 | `disable rate-limit` | `segments.rate-limit.enabled = false` |
 | `disable 7d` / `disable 5h` | `segments.rate-limit.showSevenDay/showFiveHour` |
+| `hide rate-limit bar` / `disable bar` / `text only` | `segments.rate-limit.showBar = false` |
+| `hide reset time` | `segments.rate-limit.showResetTime = false` |
+| `rate-limit bar width 20` | `segments.rate-limit.barWidth = 20` |
 | `hide cost` / `hide duration` | `segments.session.showCost/showDuration` |
 | `hide percentage` | `segments.context-bar.showPercentage = false` |
 | `bar width 30` | `segments.context-bar.width = 30` |
