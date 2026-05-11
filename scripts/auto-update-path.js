@@ -45,11 +45,12 @@ function main() {
   const current = settings.statusLine?.command;
   if (!current || !current.includes('claude-statusline')) return;
 
-  // Extract the path from "node <path>"
-  const match = current.match(/^node\s+(.+)$/);
+  // Extract runtime and path from "node <path>" or "bun <path>"
+  const match = current.match(/^(node|bun)\s+(.+)$/);
   if (!match) return;
 
-  const currentPath = match[1].replace(/\\/g, '/');
+  const runtime = match[1];
+  const currentPath = match[2].replace(/\\/g, '/');
 
   // Find latest version in cache
   // Cache structure: .claude/plugins/cache/claude-statusline/claude-statusline/<version>/
@@ -62,7 +63,7 @@ function main() {
   // Already pointing to latest — nothing to do
   if (currentPath === latestPath) return;
 
-  const newCommand = `node ${latestPath}`;
+  const newCommand = `${runtime} ${latestPath}`;
   settings.statusLine = {
     ...settings.statusLine,
     type: 'command',
