@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.25.0](https://github.com/bouob/claude-statusline/compare/v0.24.1...v0.25.0) (2026-06-10)
+
+
+### Features
+
+* **claude-statusline:** sync updates 2026-06-10 ([4771534](https://github.com/bouob/claude-statusline/commit/47715341bb4b04b4155ed31a436c965ada38666e))
+* **statusline:** add Fable and Mythos model tag colors ([23468a1](https://github.com/bouob/claude-statusline/commit/23468a11fa5981b5af6348b7e5fecb833a6e4bf3))
+
+
+### Bug Fixes
+
+* **statusline:** read terminal width from COLUMNS env var ([1993e36](https://github.com/bouob/claude-statusline/commit/1993e36b574ac82ba98f233a7ab9113b9cfdb10b))
+
 ## [0.24.1](https://github.com/bouob/claude-statusline/compare/v0.24.0...v0.24.1) (2026-05-11)
 
 
