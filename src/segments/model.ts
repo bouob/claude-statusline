@@ -9,6 +9,8 @@ const MODEL_MAP: { pattern: string; label: string; defaultColor: RGB; colorKey: 
   { pattern: 'opus', label: 'Opus', defaultColor: COLORS.opus, colorKey: 'opus' },
   { pattern: 'sonnet', label: 'Sonnet', defaultColor: COLORS.sonnet, colorKey: 'sonnet' },
   { pattern: 'haiku', label: 'Haiku', defaultColor: COLORS.haiku, colorKey: 'haiku' },
+  { pattern: 'fable', label: 'Fable', defaultColor: COLORS.fable, colorKey: 'fable' },
+  { pattern: 'mythos', label: 'Mythos', defaultColor: COLORS.mythos, colorKey: 'mythos' },
 ];
 
 function getShortName(displayName: string): string {

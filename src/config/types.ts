@@ -9,6 +9,8 @@ export interface CustomColors {
   opus?: HexColor;
   sonnet?: HexColor;
   haiku?: HexColor;
+  fable?: HexColor;
+  mythos?: HexColor;
 
   // Progress bar colors (override theme)
   progressNormal?: HexColor;

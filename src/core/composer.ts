@@ -6,7 +6,11 @@ import { reset, colorize } from '../color/ansi.js';
 
 function getTerminalWidth(): number {
   try {
-    return process.stdout.columns || 80;
+    // Claude Code pipes the statusline command's stdout, so it is not a TTY and
+    // process.stdout.columns is undefined. CC >= 2.1.141 passes the real width
+    // via the COLUMNS env var; prefer it, then fall back to TTY width, then 80.
+    const cols = Number(process.env.COLUMNS) || process.stdout.columns || 0;
+    return cols > 0 ? cols : 80;
   } catch {
     return 80;
   }
