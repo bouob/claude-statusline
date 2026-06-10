@@ -20,4 +20,6 @@ export const COLORS = {
   opus:       { r: 200, g: 120, b: 255 } as RGB,
   sonnet:     { r: 100, g: 180, b: 255 } as RGB,
   haiku:      { r: 100, g: 220, b: 160 } as RGB,
+  fable:      { r: 245, g: 185, b: 65  } as RGB,
+  mythos:     { r: 255, g: 80,  b: 120 } as RGB,
 } as const;

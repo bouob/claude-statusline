@@ -133,14 +133,18 @@ var COLORS = {
   // Models
   opus: { r: 200, g: 120, b: 255 },
   sonnet: { r: 100, g: 180, b: 255 },
-  haiku: { r: 100, g: 220, b: 160 }
+  haiku: { r: 100, g: 220, b: 160 },
+  fable: { r: 245, g: 185, b: 65 },
+  mythos: { r: 255, g: 80, b: 120 }
 };
 
 // src/segments/model.ts
 var MODEL_MAP = [
   { pattern: "opus", label: "Opus", defaultColor: COLORS.opus, colorKey: "opus" },
   { pattern: "sonnet", label: "Sonnet", defaultColor: COLORS.sonnet, colorKey: "sonnet" },
-  { pattern: "haiku", label: "Haiku", defaultColor: COLORS.haiku, colorKey: "haiku" }
+  { pattern: "haiku", label: "Haiku", defaultColor: COLORS.haiku, colorKey: "haiku" },
+  { pattern: "fable", label: "Fable", defaultColor: COLORS.fable, colorKey: "fable" },
+  { pattern: "mythos", label: "Mythos", defaultColor: COLORS.mythos, colorKey: "mythos" }
 ];
 function getShortName(displayName) {
   const match = displayName.match(/^(\w+\s*[\d.]*)/);
@@ -760,7 +764,8 @@ function getSeparator(style) {
 // src/core/composer.ts
 function getTerminalWidth() {
   try {
-    return process.stdout.columns || 80;
+    const cols = Number(process.env.COLUMNS) || process.stdout.columns || 0;
+    return cols > 0 ? cols : 80;
   } catch {
     return 80;
   }

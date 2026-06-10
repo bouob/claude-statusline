@@ -205,9 +205,9 @@ node scripts/setup.js
 
 ### 自訂顏色
 
-可用 hex 值（`#RGB` 或 `#RRGGBB`）覆寫 13 個色彩 key：
+可用 hex 值（`#RGB` 或 `#RRGGBB`）覆寫 15 個色彩 key：
 
-`opus`、`sonnet`、`haiku`、`progressNormal`、`progressWarning`、`progressCritical`、`progressEmpty`、`gitClean`、`gitDirty`、`worktree`、`project`、`session`、`resetTime`
+`opus`、`sonnet`、`haiku`、`fable`、`mythos`、`progressNormal`、`progressWarning`、`progressCritical`、`progressEmpty`、`gitClean`、`gitDirty`、`worktree`、`project`、`session`、`resetTime`
 
 ```json
 {
