@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.26.1](https://github.com/bouob/claude-statusline/compare/v0.26.0...v0.26.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* **claude-statusline:** sync updates 2026-07-07 ([0e61c7d](https://github.com/bouob/claude-statusline/commit/0e61c7d2488a3c4d92b760c08dea42ef375893d3))
+* **statusline:** stop rainbow misfire on 1M-context models ([2af3fb7](https://github.com/bouob/claude-statusline/commit/2af3fb780618c35c7194932cc68169a728e829e7))
+
 ## [0.26.0](https://github.com/bouob/claude-statusline/compare/v0.25.0...v0.26.0) (2026-07-07)
 
 
