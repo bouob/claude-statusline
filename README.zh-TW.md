@@ -11,10 +11,10 @@
 - **速率限制監控** — 5 小時 / 7 天配額用量，含 mini 進度條與重置倒數（Claude Code 2.1.80+ 原生 stdin，舊版 OAuth 降級）
 - **條件式彩虹** — 進度條在高 context 使用率時自動切換為彩虹漸層
 - **10 種主題** — default、rainbow、nord、catppuccin、dracula、gruvbox、tokyo-night、solarized、one-dark、monokai
-- **9 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion、status
+- **12 個段落** — 模型、context 進度條、session（時長 + 費用）、git、專案、worktree、速率限制、promotion、status、PR 審查狀態、agent、effort
 - **4 種進度條樣式** — 方塊 `████░░░░`、圓點 `●●●●○○○○`、細線 `━━━━┅┅┅┅`、點陣 `⣿⣿⣿⣿⠀⠀⠀⠀`
 - **5 種分隔符** — powerline、rounded、slash、minimal、none
-- **13 個自訂顏色** — 以 hex 值覆寫任意色彩
+- **18 個自訂顏色** — 以 hex 值覆寫任意色彩
 - **自適應排版** — 終端寬度不足時自動隱藏低優先級段落
 - **自然語言設定** — 透過 `/claude-statusline:customize dracula + dot + powerline` 直接設定
 - **促銷段落** — 限時功能：在促銷活動期間顯示 1x/2x context 倍率與尖峰/離峰倒數
@@ -29,10 +29,15 @@
 ### Claude Code Plugin（推薦）
 
 ```bash
-# 1. 在 Claude Code 內安裝 plugin
-/plugin                        # → 輸入: bouob/claude-statusline
+# 1. 透過 bouob-plugins marketplace（推薦）
+/plugin marketplace add bouob/claude-plugins
+/plugin install claude-statusline@bouob-plugins
 
-# 2. 重新載入插件
+#    或直接從本 repo 安裝
+/plugin marketplace add bouob/claude-statusline
+/plugin install claude-statusline@claude-statusline
+
+# 2. 重新載入 plugin
 /reload-plugins
 
 # 3. 執行 setup（自動寫入 ~/.claude/settings.json）
@@ -107,7 +112,7 @@ node scripts/setup.js
 
 設定檔依以下優先順序載入：
 
-1. `./claude-statusline.json` — 專案層級（最高優先）
+1. `./.claude-statusline.json` — 專案層級（最高優先，依 session 的 `project_dir` 解析）
 2. `~/.claude/claude-statusline.json` — 使用者層級
 
 ```json
@@ -149,16 +154,19 @@ node scripts/setup.js
   "colors": {},
   "layout": {
     "lines": 2,
-    "line1": ["model", "project", "git", "worktree", "promotion"],
-    "line2": ["context-bar", "session", "rate-limit"]
+    "line1": ["model", "effort", "agent", "project", "git", "pr", "worktree", "promotion"],
+    "line2": ["context-bar", "session", "rate-limit", "status"]
   },
   "segments": {
     "context-bar": { "enabled": true, "width": 20, "showPercentage": true },
-    "session": { "enabled": true, "showCost": true, "showDuration": true },
-    "git": { "enabled": true, "cacheSeconds": 5 },
+    "session": { "enabled": true, "showCost": true, "showDuration": true, "showLines": false },
+    "git": { "enabled": true },
     "project": { "enabled": true },
     "model": { "enabled": true },
     "worktree": { "enabled": true },
+    "pr": { "enabled": true },
+    "agent": { "enabled": true },
+    "effort": { "enabled": true, "showThinking": true },
     "rate-limit": {
       "enabled": true,
       "cacheSeconds": 60,
@@ -170,12 +178,13 @@ node scripts/setup.js
       "showBar": true,
       "rainbow": false
     },
-    "promotion": { "enabled": true }
+    "promotion": { "enabled": true },
+    "status": { "enabled": true, "cacheTtlSeconds": 300 }
   },
   "rainbow": {
     "contextThreshold": 90,
-    "onAgent": true,
-    "onWorktree": true,
+    "onAgent": false,
+    "onWorktree": false,
     "alwaysOn": false
   }
 }
@@ -201,13 +210,13 @@ node scripts/setup.js
 
 `refreshInterval` 單位為秒，建議值 `30` — 兼顧動態更新的即時性與每次重啟的開銷（約 50–100 ms/次）。
 
-注意：`refreshInterval` 屬於 **Claude Code 核心設定**，不是 plugin 設定 — 它放在 `settings.json`，不是 `claude-statusline.json`。執行 setup 時腳本會保留你既有的 `refreshInterval` 設定，不會被覆蓋。
+注意：`refreshInterval` 屬於 **Claude Code 核心設定**，不是 plugin 設定 — 它放在 `settings.json`，不是 `claude-statusline.json`。首次安裝時 setup 腳本會寫入 `refreshInterval: 30`；若你已自行設定，腳本會保留原值不覆蓋。
 
 ### 自訂顏色
 
-可用 hex 值（`#RGB` 或 `#RRGGBB`）覆寫 15 個色彩 key：
+可用 hex 值（`#RGB` 或 `#RRGGBB`）覆寫 18 個色彩 key：
 
-`opus`、`sonnet`、`haiku`、`fable`、`mythos`、`progressNormal`、`progressWarning`、`progressCritical`、`progressEmpty`、`gitClean`、`gitDirty`、`worktree`、`project`、`session`、`resetTime`
+`opus`、`sonnet`、`haiku`、`fable`、`mythos`、`progressNormal`、`progressWarning`、`progressCritical`、`progressEmpty`、`gitClean`、`gitDirty`、`worktree`、`project`、`session`、`resetTime`、`pr`、`agent`、`effort`
 
 ```json
 {
@@ -226,13 +235,20 @@ node scripts/setup.js
 |------|------|
 | `model` | 模型名稱 + 顏色（Opus 紫 / Sonnet 藍 / Haiku 綠） |
 | `context-bar` | 進度條 + 百分比（高使用率時彩虹漸層） |
-| `session` | 時長 + 費用 |
-| `git` | 分支名 + dirty 狀態（5 秒快取） |
+| `session` | 時長 + 費用（開啟 `showLines` 可加顯示行數增減） |
+| `git` | 分支名 + dirty 狀態（在該 session 的 `current_dir` 下執行） |
 | `project` | 專案資料夾名稱 |
-| `worktree` | Worktree 標籤（currentDir ≠ projectDir 時顯示） |
+| `worktree` | Worktree 標籤（`git_worktree` / 頂層 `worktree` 欄位，路徑分歧為降級判斷） |
 | `rate-limit` | 5h/7d 配額用量 + mini 進度條 + 重置倒數（原生 stdin，OAuth 降級） |
 | `promotion` | 限時促銷標籤（未啟用時自動隱藏） |
 | `status` | Claude 服務狀態指示器（快取） |
+| `pr` | PR 編號 + 審查狀態（approved ✓ / changes requested ✗ / pending ○ / draft ◌） |
+| `agent` | `--agent` session 顯示 agent 名稱 |
+| `effort` | Reasoning effort 等級，extended thinking 開啟時附 ✦ 標記 |
+
+> `pr`、`agent`、`effort` 需要較新版 Claude Code（約 v2.1.200+）。舊版沒有這些 stdin 欄位，段落會自動隱藏。
+>
+> `git` 段落反映各 session 自己的 `current_dir`，因此不同目錄或 worktree 的並行 session 會各自顯示正確分支。若兩個 session 共用同一目錄，該目錄仍只有一個 HEAD — 想讓每個 session 有自己的分支請使用 worktree。
 
 ## 解除安裝
 

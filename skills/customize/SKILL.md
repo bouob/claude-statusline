@@ -40,29 +40,31 @@ Read valid themes, separators, bar styles, color keys, and segment names from th
 
 Color format: `#RGB` or `#RRGGBB` (hex). Validate with `/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/`.
 
-## Segments (9)
+## Segments (12)
 
-`model`, `context-bar`, `session`, `git`, `project`, `worktree`, `rate-limit`, `promotion`, `status`
+`model`, `context-bar`, `session`, `git`, `project`, `worktree`, `rate-limit`, `promotion`, `status`, `pr`, `agent`, `effort`
+
+`pr`, `agent`, and `effort` render only when their stdin field is present (recent Claude Code, approx v2.1.200+).
 
 Each segment supports `enabled: boolean`. Some have additional sub-options:
 
 | Segment | Sub-options |
 |---------|------------|
 | `context-bar` | `width`, `showPercentage` |
-| `session` | `showCost`, `showDuration` |
-| `git` | `cacheSeconds` |
-| `rate-limit` | `showFiveHour`, `showSevenDay`, `showResetTime`, `showBar`, `barWidth`, `barStyle`, `rainbow` |
+| `session` | `showCost`, `showDuration`, `showLines` |
+| `rate-limit` | `cacheSeconds`, `showFiveHour`, `showSevenDay`, `showResetTime`, `showBar`, `barWidth`, `barStyle`, `rainbow` |
 | `status` | `cacheTtlSeconds` |
+| `effort` | `showThinking` |
 
 ## Rainbow behavior
 
-The progress bar automatically shifts to rainbow gradient. Configurable via `rainbow` object:
+The progress bar automatically shifts to rainbow gradient. It also triggers when stdin reports `exceeds_200k_tokens`. Configurable via `rainbow` object:
 
 | Field | Type | Default | Effect |
 |-------|------|---------|--------|
 | `contextThreshold` | `number` | `90` | Context % that triggers rainbow |
-| `onAgent` | `boolean` | `true` | Rainbow when running as subagent |
-| `onWorktree` | `boolean` | `true` | Rainbow when in worktree |
+| `onAgent` | `boolean` | `false` | Rainbow during `--agent` sessions (opt-in) |
+| `onWorktree` | `boolean` | `false` | Rainbow when in worktree (opt-in) |
 | `alwaysOn` | `boolean` | `false` | Force rainbow regardless of context |
 
 ---
@@ -95,7 +97,7 @@ Ask whether to show rate-limit segment, 5h/7d/both, show bar and reset time.
 
 ### Step 5: Segment visibility
 
-Ask which segments to hide. List all 9 segment names. Skip = keep all enabled.
+Ask which segments to hide. List all 12 segment names. Skip = keep all enabled.
 
 ### Step 6: Custom colors (optional)
 
@@ -134,6 +136,9 @@ Show the complete config JSON for review. After confirmation, write and rebuild.
 | `hide reset time` | `segments.rate-limit.showResetTime = false` |
 | `rate-limit bar width 20` | `segments.rate-limit.barWidth = 20` |
 | `hide cost` / `hide duration` | `segments.session.showCost/showDuration` |
+| `show lines` / `hide lines` | `segments.session.showLines` |
+| `hide pr` / `hide agent` / `hide effort` | `segments.<name>.enabled = false` |
+| `hide thinking marker` | `segments.effort.showThinking = false` |
 | `hide percentage` | `segments.context-bar.showPercentage = false` |
 | `bar width 30` | `segments.context-bar.width = 30` |
 | `rainbow always on` / `rainbow off` | `rainbow.alwaysOn` |
