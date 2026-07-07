@@ -52,6 +52,9 @@ const SEGMENT_PRIORITY: Record<string, number> = {
   'git': 6,
   'project': 7,
   'worktree': 8,
+  'effort': 9,
+  'pr': 10,
+  'agent': 11,
 };
 
 function fitToWidth(segments: RenderedSegment[], maxWidth: number, sepWidth: number): RenderedSegment[] {

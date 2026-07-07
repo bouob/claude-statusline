@@ -20,10 +20,19 @@ function formatCost(usd: number): string {
 
 export const sessionSegment: Segment = {
   name: 'session',
-  render(ctx: SegmentContext): SegmentOutput {
-    const dur = formatDuration(ctx.data.session.durationMs);
-    const cost = formatCost(ctx.data.session.costUsd);
-    const raw = `${dur} ${cost}`;
+  render(ctx: SegmentContext): SegmentOutput | null {
+    const cfg = ctx.config.segments.session;
+    const { durationMs, costUsd, linesAdded, linesRemoved } = ctx.data.session;
+
+    const parts: string[] = [];
+    if (cfg?.showDuration ?? true) parts.push(formatDuration(durationMs));
+    if (cfg?.showCost ?? true) parts.push(formatCost(costUsd));
+    if ((cfg?.showLines ?? false) && (linesAdded > 0 || linesRemoved > 0)) {
+      parts.push(`+${linesAdded}/-${linesRemoved}`);
+    }
+    if (parts.length === 0) return null;
+
+    const raw = parts.join(' ');
     const color = resolveColor(ctx, 'session', ctx.theme.secondary);
     const text = colorize(raw, color, ctx.colorDepth);
     return { text, width: raw.length };

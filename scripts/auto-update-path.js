@@ -3,8 +3,9 @@
 // Auto-update statusline path after plugin version update.
 // SessionStart hook — runs silently on every Claude Code launch.
 // Only writes settings.json when the current path is stale.
+// Also removes outdated version directories from the plugin cache.
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -27,9 +28,30 @@ function findLatestVersion(cacheBase) {
   entries.sort((a, b) => b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' }));
   for (const v of entries) {
     const p = join(cacheBase, v, 'dist', 'index.js');
-    if (existsSync(p)) return p;
+    if (existsSync(p)) return { version: v, distPath: p };
   }
   return null;
+}
+
+function cleanupOldVersions(cacheBase, keepVersion) {
+  let entries;
+  try {
+    entries = readdirSync(cacheBase);
+  } catch {
+    return;
+  }
+  const semverRe = /^\d+\.\d+\.\d+$/;
+  for (const v of entries) {
+    if (!semverRe.test(v) || v === keepVersion) continue;
+    const dir = resolve(cacheBase, v);
+    // Never delete the copy this script is running from (stale-scope installs may load it)
+    if (dir === pluginRoot) continue;
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // File locked (Windows) — retry on next session
+    }
+  }
 }
 
 function main() {
@@ -55,10 +77,12 @@ function main() {
   // Find latest version in cache
   // Cache structure: .claude/plugins/cache/claude-statusline/claude-statusline/<version>/
   const cacheBase = resolve(pluginRoot, '..');
-  const latestDist = findLatestVersion(cacheBase);
-  if (!latestDist) return;
+  const latest = findLatestVersion(cacheBase);
+  if (!latest) return;
 
-  const latestPath = latestDist.replace(/\\/g, '/');
+  cleanupOldVersions(cacheBase, latest.version);
+
+  const latestPath = latest.distPath.replace(/\\/g, '/');
 
   // Already pointing to latest — nothing to do
   if (currentPath === latestPath) return;

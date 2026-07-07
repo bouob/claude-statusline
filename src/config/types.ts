@@ -25,6 +25,9 @@ export interface CustomColors {
   project?: HexColor;
   session?: HexColor;
   resetTime?: HexColor;
+  pr?: HexColor;
+  agent?: HexColor;
+  effort?: HexColor;
 }
 
 export interface StatuslineConfig {
@@ -41,11 +44,14 @@ export interface StatuslineConfig {
   };
   segments: {
     'context-bar': { enabled: boolean; width: number; showPercentage: boolean };
-    session: { enabled: boolean; showCost: boolean; showDuration: boolean };
-    git: { enabled: boolean; cacheSeconds: number };
+    session: { enabled: boolean; showCost: boolean; showDuration: boolean; showLines: boolean };
+    git: { enabled: boolean };
     project: { enabled: boolean };
     model: { enabled: boolean };
     worktree: { enabled: boolean };
+    pr: { enabled: boolean };
+    agent: { enabled: boolean };
+    effort: { enabled: boolean; showThinking: boolean };
     'rate-limit': {
       enabled: boolean;
       cacheSeconds: number;

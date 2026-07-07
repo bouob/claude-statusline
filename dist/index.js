@@ -13,9 +13,7 @@ function parseInput(raw) {
         displayName: String(d.model?.display_name ?? "Unknown")
       },
       context: {
-        usedPercentage: Number(d.context_window?.used_percentage ?? 0),
-        remainingPercentage: Number(d.context_window?.remaining_percentage ?? 100),
-        totalTokens: Number(d.context_window?.context_window_size ?? 0)
+        usedPercentage: Number(d.context_window?.used_percentage ?? 0)
       },
       session: {
         durationMs: Number(d.cost?.total_duration_ms ?? 0),
@@ -27,9 +25,17 @@ function parseInput(raw) {
         currentDir: String(d.workspace?.current_dir ?? d.cwd ?? ""),
         projectDir,
         projectName: basename(projectDir) || "",
-        gitWorktree: typeof d.workspace?.git_worktree === "string" && d.workspace.git_worktree ? d.workspace.git_worktree : void 0
+        gitWorktree: typeof d.workspace?.git_worktree === "string" && d.workspace.git_worktree ? d.workspace.git_worktree : typeof d.worktree?.name === "string" && d.worktree.name ? d.worktree.name : void 0
       },
       exceeds200k: Boolean(d.exceeds_200k_tokens),
+      effort: typeof d.effort?.level === "string" && d.effort.level ? { level: d.effort.level } : void 0,
+      thinking: typeof d.thinking?.enabled === "boolean" ? { enabled: d.thinking.enabled } : void 0,
+      agent: typeof d.agent?.name === "string" && d.agent.name ? { name: d.agent.name } : void 0,
+      pr: typeof d.pr?.number === "number" ? {
+        number: d.pr.number,
+        url: typeof d.pr.url === "string" ? d.pr.url : void 0,
+        reviewState: typeof d.pr.review_state === "string" ? d.pr.review_state : void 0
+      } : void 0,
       rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day ? {
         fiveHour: {
           usedPercentage: Number(d.rate_limits?.five_hour?.used_percentage ?? 0),
@@ -47,17 +53,20 @@ function parseInput(raw) {
 }
 
 // src/core/engine.ts
-function determineVisualMode(data, config2) {
+function determineVisualMode(data, config) {
   const pct = data.context.usedPercentage;
-  const rainbow = config2.rainbow;
+  const rainbow = config.rainbow;
   if (rainbow.alwaysOn) return "rainbow";
+  if (rainbow.onAgent && data.agent) return "rainbow";
+  if (rainbow.onWorktree && data.workspace.gitWorktree) return "rainbow";
+  if (data.exceeds200k) return "rainbow";
   if (pct > rainbow.contextThreshold) return "rainbow";
   if (pct > 85) return "critical";
   if (pct > 70) return "warning";
   return "normal";
 }
-function buildContext(data, mode, colorDepth2, theme2, config2) {
-  return { data, mode, colorDepth: colorDepth2, theme: theme2, config: config2 };
+function buildContext(data, mode, colorDepth, theme, config) {
+  return { data, mode, colorDepth, theme, config };
 }
 
 // src/color/hex.ts
@@ -247,12 +256,13 @@ function getModeColor(ctx) {
 var contextBarSegment = {
   name: "context-bar",
   render(ctx) {
-    const barWidth = ctx.config.segments["context-bar"]?.width ?? DEFAULT_WIDTH;
+    const barConfig = ctx.config.segments["context-bar"];
+    const barWidth = barConfig?.width ?? DEFAULT_WIDTH;
     const chars = getBarChars(ctx.config.barStyle);
     const pct = ctx.data.context.usedPercentage;
     const filled = Math.round(pct / 100 * barWidth);
     const empty = barWidth - filled;
-    const label = `${Math.round(pct)}%`;
+    const label = barConfig?.showPercentage ?? true ? ` ${Math.round(pct)}%` : "";
     const emptyColor = resolveColor(ctx, "progressEmpty", ctx.theme.dimmed);
     let bar;
     if (ctx.mode === "rainbow" && filled > 0) {
@@ -266,8 +276,8 @@ var contextBarSegment = {
       const emptyChars = `${fg(emptyColor, ctx.colorDepth)}${chars.empty.repeat(empty)}`;
       bar = `${filledChars}${emptyChars}${reset()}`;
     }
-    const text = `${bar} ${label}`;
-    const width = barWidth + 1 + label.length;
+    const text = `${bar}${label}`;
+    const width = barWidth + label.length;
     return { text, width };
   }
 };
@@ -289,9 +299,16 @@ function formatCost(usd) {
 var sessionSegment = {
   name: "session",
   render(ctx) {
-    const dur = formatDuration(ctx.data.session.durationMs);
-    const cost = formatCost(ctx.data.session.costUsd);
-    const raw = `${dur} ${cost}`;
+    const cfg = ctx.config.segments.session;
+    const { durationMs, costUsd, linesAdded, linesRemoved } = ctx.data.session;
+    const parts = [];
+    if (cfg?.showDuration ?? true) parts.push(formatDuration(durationMs));
+    if (cfg?.showCost ?? true) parts.push(formatCost(costUsd));
+    if ((cfg?.showLines ?? false) && (linesAdded > 0 || linesRemoved > 0)) {
+      parts.push(`+${linesAdded}/-${linesRemoved}`);
+    }
+    if (parts.length === 0) return null;
+    const raw = parts.join(" ");
     const color = resolveColor(ctx, "session", ctx.theme.secondary);
     const text = colorize(raw, color, ctx.colorDepth);
     return { text, width: raw.length };
@@ -300,14 +317,11 @@ var sessionSegment = {
 
 // src/segments/git.ts
 import { execFileSync } from "child_process";
-var cachedGit = null;
-var cacheTime = 0;
-var CACHE_TTL = 5e3;
-function getGitInfo() {
-  const now = Date.now();
-  if (cachedGit && now - cacheTime < CACHE_TTL) return cachedGit;
+function getGitInfo(dir) {
+  if (!dir) return null;
   try {
     const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+      cwd: dir,
       encoding: "utf-8",
       timeout: 500,
       stdio: ["pipe", "pipe", "pipe"]
@@ -315,6 +329,7 @@ function getGitInfo() {
     let dirty = false;
     try {
       const status = execFileSync("git", ["status", "--porcelain", "-uno"], {
+        cwd: dir,
         encoding: "utf-8",
         timeout: 500,
         stdio: ["pipe", "pipe", "pipe"]
@@ -322,9 +337,7 @@ function getGitInfo() {
       dirty = status.length > 0;
     } catch {
     }
-    cachedGit = { branch, dirty };
-    cacheTime = now;
-    return cachedGit;
+    return { branch, dirty };
   } catch {
     return null;
   }
@@ -332,7 +345,7 @@ function getGitInfo() {
 var gitSegment = {
   name: "git",
   render(ctx) {
-    const info = getGitInfo();
+    const info = getGitInfo(ctx.data.workspace.currentDir);
     if (!info) return null;
     const icon = "\uE0A0";
     const dirtyMark = info.dirty ? "*" : "";
@@ -466,7 +479,6 @@ var statusSegment = {
 
 // src/segments/rate-limit.ts
 var CACHE_FILE2 = join2(tmpdir2(), "claude-statusline-ratelimit.json");
-var CACHE_TTL2 = 6e4;
 function hasActiveStatusIssues(ctx) {
   try {
     const stat = statSync2(STATUS_CACHE_FILE);
@@ -481,10 +493,10 @@ function hasActiveStatusIssues(ctx) {
     return false;
   }
 }
-function readCache2() {
+function readCache2(ttlMs) {
   try {
     const stat = statSync2(CACHE_FILE2);
-    if (Date.now() - stat.mtimeMs > CACHE_TTL2) return null;
+    if (Date.now() - stat.mtimeMs > ttlMs) return null;
     const raw = readFileSync2(CACHE_FILE2, "utf-8");
     return JSON.parse(raw);
   } catch {
@@ -551,8 +563,8 @@ function fetchUsage(token) {
     return null;
   }
 }
-function getRateLimitData() {
-  const cached = readCache2();
+function getRateLimitData(ttlMs) {
+  const cached = readCache2(ttlMs);
   if (cached) return cached;
   const token = getAccessToken();
   if (!token) return null;
@@ -637,7 +649,8 @@ var rateLimitSegment = {
   name: "rate-limit",
   render(ctx) {
     const rlConfig = ctx.config.segments["rate-limit"];
-    const data = fromStdin(ctx) ?? getRateLimitData();
+    const cacheTtlMs = (rlConfig?.cacheSeconds ?? 60) * 1e3;
+    const data = fromStdin(ctx) ?? getRateLimitData(cacheTtlMs);
     if (!data) return null;
     const compact = hasActiveStatusIssues(ctx);
     const barWidth = rlConfig?.barWidth ?? 8;
@@ -727,6 +740,65 @@ var promotionSegment = {
   }
 };
 
+// src/segments/pr.ts
+var STATE_MARKS = {
+  approved: { glyph: "\u2713", color: COLORS.green },
+  changes_requested: { glyph: "\u2717", color: COLORS.red },
+  pending: { glyph: "\u25CB", color: COLORS.yellow },
+  draft: { glyph: "\u25CC", color: COLORS.gray }
+};
+var prSegment = {
+  name: "pr",
+  render(ctx) {
+    const pr = ctx.data.pr;
+    if (!pr) return null;
+    const mark = pr.reviewState ? STATE_MARKS[pr.reviewState] : void 0;
+    const raw = mark ? `#${pr.number} ${mark.glyph}` : `#${pr.number}`;
+    const color = resolveColor(ctx, "pr", mark?.color ?? ctx.theme.secondary);
+    const text = colorize(raw, color, ctx.colorDepth);
+    return { text, width: raw.length };
+  }
+};
+
+// src/segments/agent.ts
+var agentSegment = {
+  name: "agent",
+  render(ctx) {
+    const agent = ctx.data.agent;
+    if (!agent) return null;
+    const raw = `@${agent.name}`;
+    const color = resolveColor(ctx, "agent", COLORS.orange);
+    const text = colorize(raw, color, ctx.colorDepth);
+    return { text, width: raw.length };
+  }
+};
+
+// src/segments/effort.ts
+function tierColor(level, ctx) {
+  switch (level.toLowerCase()) {
+    case "low":
+      return ctx.theme.dimmed;
+    case "xhigh":
+    case "max":
+      return COLORS.orange;
+    default:
+      return ctx.theme.secondary;
+  }
+}
+var effortSegment = {
+  name: "effort",
+  render(ctx) {
+    const effort = ctx.data.effort;
+    if (!effort) return null;
+    const showThinking = ctx.config.segments.effort?.showThinking ?? true;
+    const marker = showThinking && ctx.data.thinking?.enabled ? " \u2726" : "";
+    const raw = `${effort.level}${marker}`;
+    const color = resolveColor(ctx, "effort", tierColor(effort.level, ctx));
+    const text = colorize(raw, color, ctx.colorDepth);
+    return { text, width: raw.length };
+  }
+};
+
 // src/segments/registry.ts
 var ALL_SEGMENTS = [
   modelSegment,
@@ -737,7 +809,10 @@ var ALL_SEGMENTS = [
   worktreeSegment,
   rateLimitSegment,
   promotionSegment,
-  statusSegment
+  statusSegment,
+  prSegment,
+  agentSegment,
+  effortSegment
 ];
 var SEGMENT_MAP = new Map(
   ALL_SEGMENTS.map((s) => [s.name, s])
@@ -770,10 +845,10 @@ function getTerminalWidth() {
     return 80;
   }
 }
-function renderSegments(segmentNames, ctx, config2) {
+function renderSegments(segmentNames, ctx, config) {
   const results = [];
   for (const name of segmentNames) {
-    const segConfig = config2.segments[name];
+    const segConfig = config.segments[name];
     if (segConfig && segConfig.enabled === false) continue;
     const segments = getSegments([name]);
     for (const seg of segments) {
@@ -794,7 +869,10 @@ var SEGMENT_PRIORITY = {
   "promotion": 5,
   "git": 6,
   "project": 7,
-  "worktree": 8
+  "worktree": 8,
+  "effort": 9,
+  "pr": 10,
+  "agent": 11
 };
 function fitToWidth(segments, maxWidth, sepWidth) {
   if (maxWidth <= 0) return segments;
@@ -813,36 +891,36 @@ function fitToWidth(segments, maxWidth, sepWidth) {
   }
   return segments.filter((s) => !dropped.has(s.name));
 }
-function joinSegments(segments, ctx, config2) {
-  const sep2 = getSeparator(config2.separator);
+function joinSegments(segments, ctx, config) {
+  const sep2 = getSeparator(config.separator);
   const between = sep2.between === "  " ? "  " : ` ${colorize(sep2.between, ctx.theme.dimmed, ctx.colorDepth)} `;
   return segments.map((s) => s.text).join(between) + reset();
 }
-function compose(ctx, config2) {
-  const { layout } = config2;
-  const termWidth = config2.responsive ? getTerminalWidth() : 0;
-  const sep2 = getSeparator(config2.separator);
+function compose(ctx, config) {
+  const { layout } = config;
+  const termWidth = config.responsive ? getTerminalWidth() : 0;
+  const sep2 = getSeparator(config.separator);
   const sepWidth = sep2.between === "  " ? 2 : 3;
-  let line1Segments = renderSegments(layout.line1, ctx, config2);
-  if (config2.responsive && termWidth > 0) {
+  let line1Segments = renderSegments(layout.line1, ctx, config);
+  if (config.responsive && termWidth > 0) {
     line1Segments = fitToWidth(line1Segments, termWidth, sepWidth);
   }
-  const line1 = joinSegments(line1Segments, ctx, config2);
+  const line1 = joinSegments(line1Segments, ctx, config);
   if (layout.lines === 1) {
     return line1;
   }
-  let line2Segments = renderSegments(layout.line2, ctx, config2);
-  if (config2.responsive && termWidth > 0) {
+  let line2Segments = renderSegments(layout.line2, ctx, config);
+  if (config.responsive && termWidth > 0) {
     line2Segments = fitToWidth(line2Segments, termWidth, sepWidth);
   }
-  const line2 = joinSegments(line2Segments, ctx, config2);
+  const line2 = joinSegments(line2Segments, ctx, config);
   return `${line1}
 ${line2}`;
 }
 
 // src/config/loader.ts
 import { readFileSync as readFileSync3 } from "fs";
-import { resolve as resolve2, join as join3 } from "path";
+import { join as join3 } from "path";
 import { homedir as homedir2 } from "os";
 
 // src/config/defaults.ts
@@ -855,16 +933,19 @@ var DEFAULT_CONFIG = {
   colors: {},
   layout: {
     lines: 2,
-    line1: ["model", "project", "git", "worktree", "promotion"],
+    line1: ["model", "effort", "agent", "project", "git", "pr", "worktree", "promotion"],
     line2: ["context-bar", "session", "rate-limit", "status"]
   },
   segments: {
     "context-bar": { enabled: true, width: 20, showPercentage: true },
-    session: { enabled: true, showCost: true, showDuration: true },
-    git: { enabled: true, cacheSeconds: 5 },
+    session: { enabled: true, showCost: true, showDuration: true, showLines: false },
+    git: { enabled: true },
     project: { enabled: true },
     model: { enabled: true },
     worktree: { enabled: true },
+    pr: { enabled: true },
+    agent: { enabled: true },
+    effort: { enabled: true, showThinking: true },
     "rate-limit": {
       enabled: true,
       cacheSeconds: 60,
@@ -881,8 +962,9 @@ var DEFAULT_CONFIG = {
   },
   rainbow: {
     contextThreshold: 90,
-    onAgent: true,
-    onWorktree: true,
+    // Opt-in: a permanent rainbow bar would mask warning/critical colors
+    onAgent: false,
+    onWorktree: false,
     alwaysOn: false
   }
 };
@@ -911,8 +993,9 @@ function deepMerge(a, b) {
   }
   return result;
 }
-function loadConfig() {
-  const projectConfig = tryReadJson(resolve2(`.${CONFIG_FILENAME}`));
+function loadConfig(projectDir) {
+  const projectBase = projectDir || process.cwd();
+  const projectConfig = tryReadJson(join3(projectBase, `.${CONFIG_FILENAME}`));
   const userConfig = tryReadJson(join3(homedir2(), ".claude", CONFIG_FILENAME));
   let merged = DEFAULT_CONFIG;
   if (userConfig) {
@@ -1147,8 +1230,8 @@ var THEMES = /* @__PURE__ */ new Map([
   ["monokai", monokaiTheme]
 ]);
 function loadTheme(name) {
-  const theme2 = THEMES.get(name);
-  return theme2?.colors ?? defaultTheme.colors;
+  const theme = THEMES.get(name);
+  return theme?.colors ?? defaultTheme.colors;
 }
 
 // src/color/detect.ts
@@ -1170,9 +1253,6 @@ function detectColorDepth() {
 }
 
 // src/index.ts
-var config = loadConfig();
-var theme = loadTheme(config.theme);
-var colorDepth = config.colorMode === "auto" ? detectColorDepth() : config.colorMode;
 var buffer = "";
 process.stdin.setEncoding("utf-8");
 process.stdin.on("data", (chunk) => {
@@ -1183,6 +1263,9 @@ process.stdin.on("end", () => {
   if (!input) return;
   const data = parseInput(input);
   if (!data) return;
+  const config = loadConfig(data.workspace.projectDir);
+  const theme = loadTheme(config.theme);
+  const colorDepth = config.colorMode === "auto" ? detectColorDepth() : config.colorMode;
   const mode = determineVisualMode(data, config);
   const ctx = buildContext(data, mode, colorDepth, theme, config);
   const output = compose(ctx, config);

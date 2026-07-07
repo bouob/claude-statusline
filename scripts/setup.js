@@ -48,8 +48,10 @@ function main() {
     return;
   }
 
-  // Write statusLine config, preserving user-set fields like refreshInterval
+  // Write statusLine config. refreshInterval keeps time-based segments fresh
+  // (rate-limit reset countdown, service status); user-set fields win via spread.
   settings.statusLine = {
+    refreshInterval: 30,
     ...settings.statusLine,
     type: 'command',
     command,

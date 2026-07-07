@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Mock script: simulates Claude Code stdin with real JSON format.
- * Usage: node scripts/mock.js | node dist/index.js
+ * Mock script: renders every scenario through dist/index.js with real
+ * Claude Code stdin JSON (one spawn per scenario — piping all scenarios
+ * into a single dist/index.js run would concatenate JSON lines and fail).
+ * Usage: node scripts/mock.js
  */
+
+import { execFileSync } from 'node:child_process';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const dist = join(__dirname, '..', 'dist', 'index.js');
 
 const scenarios = [
   { label: 'Normal (5%)', pct: 5, remaining: 95, exceeds: false },
@@ -20,6 +29,66 @@ const scenarios = [
       project_dir: 'D:\\Desktop\\side-project',
       added_dirs: [],
       git_worktree: 'feature-auth',
+    },
+  },
+  {
+    label: 'Worktree - top-level worktree object (2.1.200)',
+    pct: 5, remaining: 95, exceeds: false,
+    workspaceOverride: {
+      current_dir: 'D:\\Desktop\\side-project\\.worktrees\\feature-x',
+      project_dir: 'D:\\Desktop\\side-project',
+      added_dirs: [],
+    },
+    extra: {
+      version: '2.1.200',
+      worktree: {
+        name: 'feature-x',
+        path: 'D:\\Desktop\\side-project\\.worktrees\\feature-x',
+        branch: 'feature/x',
+        original_cwd: 'D:\\Desktop\\side-project',
+        original_branch: 'main',
+      },
+    },
+  },
+  {
+    label: 'Effort max + thinking',
+    pct: 30, remaining: 70, exceeds: false,
+    extra: {
+      version: '2.1.200',
+      effort: { level: 'max' },
+      thinking: { enabled: true },
+    },
+  },
+  {
+    label: 'Agent session',
+    pct: 30, remaining: 70, exceeds: false,
+    extra: {
+      version: '2.1.200',
+      agent: { name: 'code-reviewer' },
+    },
+  },
+  {
+    label: 'PR approved',
+    pct: 30, remaining: 70, exceeds: false,
+    extra: {
+      version: '2.1.200',
+      pr: { number: 42, url: 'https://github.com/bouob/claude-statusline/pull/42', review_state: 'approved' },
+    },
+  },
+  {
+    label: 'PR changes requested',
+    pct: 30, remaining: 70, exceeds: false,
+    extra: {
+      version: '2.1.200',
+      pr: { number: 42, url: 'https://github.com/bouob/claude-statusline/pull/42', review_state: 'changes_requested' },
+    },
+  },
+  {
+    label: 'PR draft',
+    pct: 30, remaining: 70, exceeds: false,
+    extra: {
+      version: '2.1.200',
+      pr: { number: 7, url: 'https://github.com/bouob/claude-statusline/pull/7', review_state: 'draft' },
     },
   },
 ];
@@ -60,8 +129,18 @@ for (const s of scenarios) {
         resets_at: new Date(Date.now() + (4 * 24 + 9) * 3600_000).toISOString(),
       },
     },
+    ...(s.extra ?? {}),
   };
 
-  console.error(`\n--- ${s.label} ---`);
-  console.log(JSON.stringify(data));
+  console.log(`\n--- ${s.label} ---`);
+  try {
+    const result = execFileSync('node', [dist], {
+      input: JSON.stringify(data),
+      encoding: 'utf-8',
+      env: { ...process.env, COLORTERM: 'truecolor' },
+    });
+    process.stdout.write(result);
+  } catch {
+    console.log('[render error]');
+  }
 }

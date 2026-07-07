@@ -11,10 +11,10 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 - **Rate Limit Monitoring** — 5-hour and 7-day quota usage with mini progress bars and reset countdown (native stdin on Claude Code 2.1.80+, OAuth fallback for older versions)
 - **Conditional Rainbow** — Progress bar automatically shifts to rainbow gradient at high context usage
 - **10 Themes** — default, rainbow, nord, catppuccin, dracula, gruvbox, tokyo-night, solarized, one-dark, monokai
-- **9 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion, status
+- **12 Segments** — model, context bar, session (duration + cost), git, project, worktree, rate limit, promotion, status, PR review state, agent, effort
 - **4 Bar Styles** — block `████░░░░`, dot `●●●●○○○○`, line `━━━━┅┅┅┅`, braille `⣿⣿⣿⣿⠀⠀⠀⠀`
 - **5 Separators** — powerline, rounded, slash, minimal, none
-- **13 Custom Colors** — Override any color with hex values
+- **18 Custom Colors** — Override any color with hex values
 - **Responsive Layout** — Auto-hide low-priority segments when terminal is narrow
 - **Natural Language Config** — Configure via `/claude-statusline:customize dracula + dot + powerline`
 - **Promotion Segment** — Temporary: shows 1x/2x context multiplier and peak/off-peak countdown during active promotions
@@ -29,8 +29,13 @@ Zero-dependency statusline for [Claude Code](https://code.claude.com/) with cond
 ### Claude Code Plugin (Recommended)
 
 ```bash
-# 1. Inside Claude Code, install plugin
-/plugin                        # → enter: bouob/claude-statusline
+# 1. Via the bouob-plugins marketplace (recommended)
+/plugin marketplace add bouob/claude-plugins
+/plugin install claude-statusline@bouob-plugins
+
+#    Or directly from this repo
+/plugin marketplace add bouob/claude-statusline
+/plugin install claude-statusline@claude-statusline
 
 # 2. Reload plugins
 /reload-plugins
@@ -107,7 +112,7 @@ Run without arguments for an interactive wizard:
 
 Config files are loaded in priority order:
 
-1. `./claude-statusline.json` — Project-level (highest priority)
+1. `./.claude-statusline.json` — Project-level (highest priority, resolved against the session's `project_dir`)
 2. `~/.claude/claude-statusline.json` — User-level
 
 ```json
@@ -149,16 +154,19 @@ Only include the fields you want to override — everything else uses theme defa
   "colors": {},
   "layout": {
     "lines": 2,
-    "line1": ["model", "project", "git", "worktree", "promotion"],
-    "line2": ["context-bar", "session", "rate-limit"]
+    "line1": ["model", "effort", "agent", "project", "git", "pr", "worktree", "promotion"],
+    "line2": ["context-bar", "session", "rate-limit", "status"]
   },
   "segments": {
     "context-bar": { "enabled": true, "width": 20, "showPercentage": true },
-    "session": { "enabled": true, "showCost": true, "showDuration": true },
-    "git": { "enabled": true, "cacheSeconds": 5 },
+    "session": { "enabled": true, "showCost": true, "showDuration": true, "showLines": false },
+    "git": { "enabled": true },
     "project": { "enabled": true },
     "model": { "enabled": true },
     "worktree": { "enabled": true },
+    "pr": { "enabled": true },
+    "agent": { "enabled": true },
+    "effort": { "enabled": true, "showThinking": true },
     "rate-limit": {
       "enabled": true,
       "cacheSeconds": 60,
@@ -170,12 +178,13 @@ Only include the fields you want to override — everything else uses theme defa
       "showBar": true,
       "rainbow": false
     },
-    "promotion": { "enabled": true }
+    "promotion": { "enabled": true },
+    "status": { "enabled": true, "cacheTtlSeconds": 300 }
   },
   "rainbow": {
     "contextThreshold": 90,
-    "onAgent": true,
-    "onWorktree": true,
+    "onAgent": false,
+    "onWorktree": false,
     "alwaysOn": false
   }
 }
@@ -201,13 +210,13 @@ By default, Claude Code only invokes the statusline command after each turn comp
 
 `refreshInterval` is measured in seconds. Recommended value: `30` — balances responsiveness against startup overhead (~50–100 ms per tick).
 
-Note: `refreshInterval` is a **Claude Code core setting**, not a plugin config — it lives in `settings.json`, not `claude-statusline.json`. The setup script preserves any `refreshInterval` you have set when re-registering the statusline.
+Note: `refreshInterval` is a **Claude Code core setting**, not a plugin config — it lives in `settings.json`, not `claude-statusline.json`. The setup script writes `refreshInterval: 30` on fresh installs and preserves any value you have set when re-registering the statusline.
 
 ### Custom Colors
 
-Override any of the 15 color keys with hex values (`#RGB` or `#RRGGBB`):
+Override any of the 18 color keys with hex values (`#RGB` or `#RRGGBB`):
 
-`opus`, `sonnet`, `haiku`, `fable`, `mythos`, `progressNormal`, `progressWarning`, `progressCritical`, `progressEmpty`, `gitClean`, `gitDirty`, `worktree`, `project`, `session`, `resetTime`
+`opus`, `sonnet`, `haiku`, `fable`, `mythos`, `progressNormal`, `progressWarning`, `progressCritical`, `progressEmpty`, `gitClean`, `gitDirty`, `worktree`, `project`, `session`, `resetTime`, `pr`, `agent`, `effort`
 
 ```json
 {
@@ -226,13 +235,20 @@ Priority: `colors` field > theme definition > defaults.
 |---------|---------|
 | `model` | Model name with color (Opus purple / Sonnet blue / Haiku green) |
 | `context-bar` | Progress bar + percentage (rainbow gradient at high usage) |
-| `session` | Duration + cost |
-| `git` | Branch name + dirty status (5s cache) |
+| `session` | Duration + cost (+ lines changed with `showLines`) |
+| `git` | Branch name + dirty status (runs in the session's `current_dir`) |
 | `project` | Project folder name |
-| `worktree` | Worktree label (when current_dir ≠ project_dir) |
+| `worktree` | Worktree label (`git_worktree` / top-level `worktree` field, path-divergence fallback) |
 | `rate-limit` | 5h/7d quota usage + mini progress bar + reset countdown (native stdin, OAuth fallback) |
 | `promotion` | Time-limited promotion label (auto-hidden when inactive) |
 | `status` | Claude service status indicator (cached) |
+| `pr` | PR number + review state (approved ✓ / changes requested ✗ / pending ○ / draft ◌) |
+| `agent` | Agent name during `--agent` sessions |
+| `effort` | Reasoning effort level, with ✦ marker when extended thinking is on |
+
+> `pr`, `agent`, and `effort` need a recent Claude Code (approx v2.1.200+). On older versions those stdin fields are absent and the segments hide automatically.
+>
+> The `git` segment reflects each session's own `current_dir`, so concurrent sessions in different directories or worktrees show their own branch. Two sessions sharing one directory still share one HEAD — use worktrees for per-session branches.
 
 ## Uninstall
 

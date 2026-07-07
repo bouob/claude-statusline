@@ -18,12 +18,13 @@ function getModeColor(ctx: SegmentContext): RGB {
 export const contextBarSegment: Segment = {
   name: 'context-bar',
   render(ctx: SegmentContext): SegmentOutput {
-    const barWidth = ctx.config.segments['context-bar']?.width ?? DEFAULT_WIDTH;
+    const barConfig = ctx.config.segments['context-bar'];
+    const barWidth = barConfig?.width ?? DEFAULT_WIDTH;
     const chars = getBarChars(ctx.config.barStyle);
     const pct = ctx.data.context.usedPercentage;
     const filled = Math.round((pct / 100) * barWidth);
     const empty = barWidth - filled;
-    const label = `${Math.round(pct)}%`;
+    const label = (barConfig?.showPercentage ?? true) ? ` ${Math.round(pct)}%` : '';
     const emptyColor = resolveColor(ctx, 'progressEmpty', ctx.theme.dimmed);
 
     let bar: string;
@@ -42,8 +43,8 @@ export const contextBarSegment: Segment = {
       bar = `${filledChars}${emptyChars}${reset()}`;
     }
 
-    const text = `${bar} ${label}`;
-    const width = barWidth + 1 + label.length;
+    const text = `${bar}${label}`;
+    const width = barWidth + label.length;
     return { text, width };
   },
 };
