@@ -19,7 +19,6 @@ interface RateLimitData {
 }
 
 const CACHE_FILE = join(tmpdir(), 'claude-statusline-ratelimit.json');
-const CACHE_TTL = 60_000;
 
 function hasActiveStatusIssues(ctx: SegmentContext): boolean {
   try {
@@ -36,10 +35,10 @@ function hasActiveStatusIssues(ctx: SegmentContext): boolean {
   }
 }
 
-function readCache(): RateLimitData | null {
+function readCache(ttlMs: number): RateLimitData | null {
   try {
     const stat = statSync(CACHE_FILE);
-    if (Date.now() - stat.mtimeMs > CACHE_TTL) return null;
+    if (Date.now() - stat.mtimeMs > ttlMs) return null;
     const raw = readFileSync(CACHE_FILE, 'utf-8');
     return JSON.parse(raw);
   } catch {
@@ -110,8 +109,8 @@ function fetchUsage(token: string): RateLimitData | null {
   }
 }
 
-function getRateLimitData(): RateLimitData | null {
-  const cached = readCache();
+function getRateLimitData(ttlMs: number): RateLimitData | null {
+  const cached = readCache(ttlMs);
   if (cached) return cached;
 
   const token = getAccessToken();
@@ -224,7 +223,8 @@ export const rateLimitSegment: Segment = {
   name: 'rate-limit',
   render(ctx: SegmentContext): SegmentOutput | null {
     const rlConfig = ctx.config.segments['rate-limit'];
-    const data = fromStdin(ctx) ?? getRateLimitData();
+    const cacheTtlMs = (rlConfig?.cacheSeconds ?? 60) * 1000;
+    const data = fromStdin(ctx) ?? getRateLimitData(cacheTtlMs);
     if (!data) return null;
 
     const compact = hasActiveStatusIssues(ctx);

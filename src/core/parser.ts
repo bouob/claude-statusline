@@ -16,8 +16,6 @@ export function parseInput(raw: string): StatusData | null {
       },
       context: {
         usedPercentage: Number(d.context_window?.used_percentage ?? 0),
-        remainingPercentage: Number(d.context_window?.remaining_percentage ?? 100),
-        totalTokens: Number(d.context_window?.context_window_size ?? 0),
       },
       session: {
         durationMs: Number(d.cost?.total_duration_ms ?? 0),
@@ -31,9 +29,28 @@ export function parseInput(raw: string): StatusData | null {
         projectName: basename(projectDir) || '',
         gitWorktree: typeof d.workspace?.git_worktree === 'string' && d.workspace.git_worktree
           ? d.workspace.git_worktree
-          : undefined,
+          // Top-level worktree object from --worktree sessions (CC 2.1.200+)
+          : typeof d.worktree?.name === 'string' && d.worktree.name
+            ? d.worktree.name
+            : undefined,
       },
       exceeds200k: Boolean(d.exceeds_200k_tokens),
+      effort: typeof d.effort?.level === 'string' && d.effort.level
+        ? { level: d.effort.level }
+        : undefined,
+      thinking: typeof d.thinking?.enabled === 'boolean'
+        ? { enabled: d.thinking.enabled }
+        : undefined,
+      agent: typeof d.agent?.name === 'string' && d.agent.name
+        ? { name: d.agent.name }
+        : undefined,
+      pr: typeof d.pr?.number === 'number'
+        ? {
+            number: d.pr.number,
+            url: typeof d.pr.url === 'string' ? d.pr.url : undefined,
+            reviewState: typeof d.pr.review_state === 'string' ? d.pr.review_state : undefined,
+          }
+        : undefined,
       rateLimits: d.rate_limits?.five_hour || d.rate_limits?.seven_day
         ? {
             fiveHour: {

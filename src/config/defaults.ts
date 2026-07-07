@@ -9,16 +9,19 @@ export const DEFAULT_CONFIG: StatuslineConfig = {
   colors: {},
   layout: {
     lines: 2,
-    line1: ['model', 'project', 'git', 'worktree', 'promotion'],
+    line1: ['model', 'effort', 'agent', 'project', 'git', 'pr', 'worktree', 'promotion'],
     line2: ['context-bar', 'session', 'rate-limit', 'status'],
   },
   segments: {
     'context-bar': { enabled: true, width: 20, showPercentage: true },
-    session: { enabled: true, showCost: true, showDuration: true },
-    git: { enabled: true, cacheSeconds: 5 },
+    session: { enabled: true, showCost: true, showDuration: true, showLines: false },
+    git: { enabled: true },
     project: { enabled: true },
     model: { enabled: true },
     worktree: { enabled: true },
+    pr: { enabled: true },
+    agent: { enabled: true },
+    effort: { enabled: true, showThinking: true },
     'rate-limit': {
       enabled: true,
       cacheSeconds: 60,
@@ -35,8 +38,9 @@ export const DEFAULT_CONFIG: StatuslineConfig = {
   },
   rainbow: {
     contextThreshold: 90,
-    onAgent: true,
-    onWorktree: true,
+    // Opt-in: a permanent rainbow bar would mask warning/critical colors
+    onAgent: false,
+    onWorktree: false,
     alwaysOn: false,
   },
 };

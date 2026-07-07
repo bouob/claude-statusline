@@ -6,8 +6,6 @@ export interface StatusData {
   };
   context: {
     usedPercentage: number;
-    remainingPercentage: number;
-    totalTokens: number;
   };
   session: {
     durationMs: number;
@@ -22,6 +20,10 @@ export interface StatusData {
     gitWorktree?: string;
   };
   exceeds200k: boolean;
+  effort?: { level: string };
+  thinking?: { enabled: boolean };
+  agent?: { name: string };
+  pr?: { number: number; url?: string; reviewState?: string };
   rateLimits?: {
     fiveHour: { usedPercentage: number; resetsAt: string | null };
     sevenDay: { usedPercentage: number; resetsAt: string | null };
