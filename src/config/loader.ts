@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { StatuslineConfig } from './types.js';
 import { DEFAULT_CONFIG } from './defaults.js';
@@ -31,9 +31,12 @@ function deepMerge(a: Record<string, unknown>, b: Record<string, unknown>): Reco
   return result;
 }
 
-export function loadConfig(): StatuslineConfig {
+export function loadConfig(projectDir?: string): StatuslineConfig {
   // Priority: project-level > user-level > defaults
-  const projectConfig = tryReadJson(resolve(`.${CONFIG_FILENAME}`));
+  // Project config resolves against the session's project_dir (from stdin),
+  // not the process cwd — see the git segment for the same multi-session rule.
+  const projectBase = projectDir || process.cwd();
+  const projectConfig = tryReadJson(join(projectBase, `.${CONFIG_FILENAME}`));
   const userConfig = tryReadJson(join(homedir(), '.claude', CONFIG_FILENAME));
 
   let merged = DEFAULT_CONFIG as unknown as Record<string, unknown>;

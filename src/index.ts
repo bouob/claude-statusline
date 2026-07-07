@@ -6,12 +6,6 @@ import { loadTheme } from './themes/loader.js';
 import { detectColorDepth } from './color/detect.js';
 import type { ColorDepth } from './types.js';
 
-const config = loadConfig();
-const theme = loadTheme(config.theme);
-const colorDepth: ColorDepth = config.colorMode === 'auto'
-  ? detectColorDepth()
-  : config.colorMode;
-
 // Collect all stdin, process on end
 let buffer = '';
 
@@ -27,7 +21,12 @@ process.stdin.on('end', () => {
   const data = parseInput(input);
   if (!data) return;
 
-
+  // Config load needs the session's project_dir from stdin, so it happens here
+  const config = loadConfig(data.workspace.projectDir);
+  const theme = loadTheme(config.theme);
+  const colorDepth: ColorDepth = config.colorMode === 'auto'
+    ? detectColorDepth()
+    : config.colorMode;
 
   const mode = determineVisualMode(data, config);
   const ctx = buildContext(data, mode, colorDepth, theme, config);
