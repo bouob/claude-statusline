@@ -10,7 +10,6 @@ export function determineVisualMode(data: StatusData, config: StatuslineConfig):
   if (rainbow.alwaysOn) return 'rainbow';
   if (rainbow.onAgent && data.agent) return 'rainbow';
   if (rainbow.onWorktree && data.workspace.gitWorktree) return 'rainbow';
-  if (data.exceeds200k) return 'rainbow';
   if (pct > rainbow.contextThreshold) return 'rainbow';
 
   if (pct > 85) return 'critical';

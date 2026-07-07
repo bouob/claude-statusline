@@ -27,7 +27,6 @@ function parseInput(raw) {
         projectName: basename(projectDir) || "",
         gitWorktree: typeof d.workspace?.git_worktree === "string" && d.workspace.git_worktree ? d.workspace.git_worktree : typeof d.worktree?.name === "string" && d.worktree.name ? d.worktree.name : void 0
       },
-      exceeds200k: Boolean(d.exceeds_200k_tokens),
       effort: typeof d.effort?.level === "string" && d.effort.level ? { level: d.effort.level } : void 0,
       thinking: typeof d.thinking?.enabled === "boolean" ? { enabled: d.thinking.enabled } : void 0,
       agent: typeof d.agent?.name === "string" && d.agent.name ? { name: d.agent.name } : void 0,
@@ -59,7 +58,6 @@ function determineVisualMode(data, config) {
   if (rainbow.alwaysOn) return "rainbow";
   if (rainbow.onAgent && data.agent) return "rainbow";
   if (rainbow.onWorktree && data.workspace.gitWorktree) return "rainbow";
-  if (data.exceeds200k) return "rainbow";
   if (pct > rainbow.contextThreshold) return "rainbow";
   if (pct > 85) return "critical";
   if (pct > 70) return "warning";
