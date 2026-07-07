@@ -19,7 +19,6 @@ export interface StatusData {
     projectName: string;
     gitWorktree?: string;
   };
-  exceeds200k: boolean;
   effort?: { level: string };
   thinking?: { enabled: boolean };
   agent?: { name: string };

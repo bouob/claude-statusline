@@ -34,7 +34,6 @@ export function parseInput(raw: string): StatusData | null {
             ? d.worktree.name
             : undefined,
       },
-      exceeds200k: Boolean(d.exceeds_200k_tokens),
       effort: typeof d.effort?.level === 'string' && d.effort.level
         ? { level: d.effort.level }
         : undefined,
