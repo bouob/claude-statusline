@@ -10,16 +10,14 @@ interface GitInfo {
   dirty: boolean;
 }
 
-let cachedGit: GitInfo | null = null;
-let cacheTime = 0;
-const CACHE_TTL = 5000;
-
-function getGitInfo(): GitInfo | null {
-  const now = Date.now();
-  if (cachedGit && now - cacheTime < CACHE_TTL) return cachedGit;
+// Git must run in the session's own directory (from stdin), never the process
+// cwd — concurrent sessions would otherwise show each other's branch.
+function getGitInfo(dir: string): GitInfo | null {
+  if (!dir) return null;
 
   try {
     const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: dir,
       encoding: 'utf-8',
       timeout: 500,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -28,6 +26,7 @@ function getGitInfo(): GitInfo | null {
     let dirty = false;
     try {
       const status = execFileSync('git', ['status', '--porcelain', '-uno'], {
+        cwd: dir,
         encoding: 'utf-8',
         timeout: 500,
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -37,9 +36,7 @@ function getGitInfo(): GitInfo | null {
       // ignore
     }
 
-    cachedGit = { branch, dirty };
-    cacheTime = now;
-    return cachedGit;
+    return { branch, dirty };
   } catch {
     return null;
   }
@@ -48,7 +45,7 @@ function getGitInfo(): GitInfo | null {
 export const gitSegment: Segment = {
   name: 'git',
   render(ctx: SegmentContext): SegmentOutput | null {
-    const info = getGitInfo();
+    const info = getGitInfo(ctx.data.workspace.currentDir);
     if (!info) return null;
 
     const icon = '\uE0A0';
