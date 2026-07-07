@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.26.0](https://github.com/bouob/claude-statusline/compare/v0.25.0...v0.26.0) (2026-07-07)
+
+
+### Features
+
+* **claude-statusline:** sync updates 2026-07-07 ([e7d300d](https://github.com/bouob/claude-statusline/commit/e7d300d501e743f0e3ba9ff80518e2125b17b3b2))
+* **statusline:** add pr, agent, effort segments; wire dormant config keys ([3e33228](https://github.com/bouob/claude-statusline/commit/3e33228d0baeb6b7cc82e149d97156bb28c36a46))
+
+
+### Bug Fixes
+
+* **statusline:** resolve project config from workspace project_dir ([10c67fb](https://github.com/bouob/claude-statusline/commit/10c67fbf373a64e5ed00cb79b48bb3712029770b))
+* **statusline:** run git segment against session current_dir, not process cwd ([e66b4e3](https://github.com/bouob/claude-statusline/commit/e66b4e3cf405d9c0e51570cf52b7d4e9487250b7))
+
 ## [0.25.0](https://github.com/bouob/claude-statusline/compare/v0.24.1...v0.25.0) (2026-06-10)
 
 
