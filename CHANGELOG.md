@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.26.2](https://github.com/bouob/claude-statusline/compare/v0.26.1...v0.26.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* **statusline:** quote CLAUDE_PLUGIN_ROOT in SessionStart hook ([abacb99](https://github.com/bouob/claude-statusline/commit/abacb99edd92690598b7f361d9130c9cb8bf7b34))
+* **statusline:** quote CLAUDE_PLUGIN_ROOT in SessionStart hook ([6f4ce86](https://github.com/bouob/claude-statusline/commit/6f4ce86538dec42d952787c0f04e0348370ecee2))
+* **statusline:** quote dist path in statusLine command ([c0a5700](https://github.com/bouob/claude-statusline/commit/c0a57002b0229c1e339e22b3e025082fd079880e))
+
 ## [0.26.1](https://github.com/bouob/claude-statusline/compare/v0.26.0...v0.26.1) (2026-07-07)
 
 
