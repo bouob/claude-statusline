@@ -202,7 +202,7 @@ node scripts/setup.js
 {
   "statusLine": {
     "type": "command",
-    "command": "node /path/to/claude-statusline/dist/index.js",
+    "command": "node \"/path/to/claude-statusline/dist/index.js\"",
     "refreshInterval": 30
   }
 }

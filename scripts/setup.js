@@ -41,7 +41,7 @@ function main() {
   }
 
   // Check if already configured
-  const command = `node ${distPath.replace(/\\/g, '/')}`;
+  const command = `node "${distPath.replace(/\\/g, '/')}"`;
   if (settings.statusLine?.command === command) {
     console.log('[OK] claude-statusline is already configured.');
     console.log(`Command: ${command}`);
