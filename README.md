@@ -202,7 +202,7 @@ By default, Claude Code only invokes the statusline command after each turn comp
 {
   "statusLine": {
     "type": "command",
-    "command": "node /path/to/claude-statusline/dist/index.js",
+    "command": "node \"/path/to/claude-statusline/dist/index.js\"",
     "refreshInterval": 30
   }
 }
